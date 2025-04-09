@@ -8,9 +8,22 @@
         <h3>{{ recipe.title }}</h3>
         <p><strong>Category:</strong> {{ recipe.category }}</p>
         <p>{{ recipe.description }}</p>
+
         {% if recipe.image %}
             <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" width="300">
         {% endif %}
+
+        {% if user.is_authenticated %}
+            <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                {% if user in recipe.liked_by.all %}
+                    <button type="submit">💔 Unsave</button>
+                {% else %}
+                    <button type="submit">❤️ Save</button>
+                {% endif %}
+            </form>
+        {% endif %}
+
         <hr>
     </div>
 {% empty %}

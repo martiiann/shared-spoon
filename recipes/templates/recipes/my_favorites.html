@@ -1,7 +1,7 @@
 {% extends "recipes/base.html" %}
 
 {% block content %}
-  <h2>My Recipes</h2>
+  <h2>My Saved Recipes</h2>
 
   {% if recipes %}
     {% for recipe in recipes %}
@@ -16,17 +16,13 @@
 
         <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
             {% csrf_token %}
-            {% if user in recipe.liked_by.all %}
-                <button type="submit">💔 Unsave</button>
-            {% else %}
-                <button type="submit">❤️ Save</button>
-            {% endif %}
+            <button type="submit">💔 Unsave</button>
         </form>
 
         <hr>
       </div>
     {% endfor %}
   {% else %}
-    <p>You haven’t added any recipes yet.</p>
+    <p>You haven't saved any recipes yet.</p>
   {% endif %}
 {% endblock %}
