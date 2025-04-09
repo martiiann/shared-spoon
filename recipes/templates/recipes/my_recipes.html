@@ -1,0 +1,21 @@
+{% extends "recipes/base.html" %}
+
+{% block content %}
+  <h2>My Recipes</h2>
+
+  {% if recipes %}
+    {% for recipe in recipes %}
+      <div>
+        <h3>{{ recipe.title }}</h3>
+        <p><strong>Category:</strong> {{ recipe.category }}</p>
+        <p>{{ recipe.description }}</p>
+        {% if recipe.image %}
+          <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" width="300">
+        {% endif %}
+        <hr>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>You haven’t added any recipes yet.</p>
+  {% endif %}
+{% endblock %}
