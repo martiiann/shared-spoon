@@ -5,7 +5,7 @@
 
   {% if recipes %}
     {% for recipe in recipes %}
-      <div>
+      <div class="recipe-card">
         <h3>{{ recipe.title }}</h3>
         <p><strong>Category:</strong> {{ recipe.category }}</p>
         <p>{{ recipe.description }}</p>
@@ -22,8 +22,6 @@
                 <button type="submit">❤️ Save</button>
             {% endif %}
         </form>
-
-        <hr>
       </div>
     {% endfor %}
   {% else %}

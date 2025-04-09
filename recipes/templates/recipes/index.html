@@ -4,7 +4,7 @@
 <h2>Latest Recipes</h2>
 
 {% for recipe in recipes %}
-    <div>
+    <div class="recipe-card">
         <h3>{{ recipe.title }}</h3>
         <p><strong>Category:</strong> {{ recipe.category }}</p>
         <p>{{ recipe.description }}</p>
@@ -23,8 +23,6 @@
                 {% endif %}
             </form>
         {% endif %}
-
-        <hr>
     </div>
 {% empty %}
     <p>No recipes yet!</p>
