@@ -7,21 +7,36 @@
     {% for recipe in recipes %}
       <div class="recipe-card">
         <h3>{{ recipe.title }}</h3>
-        <p><strong>Category:</strong> {{ recipe.category }}</p>
+        <p><strong>Category:</strong>
+          {% if recipe.category == "breakfast" %} 🥞 Breakfast
+          {% elif recipe.category == "lunch" %} 🥪 Lunch
+          {% elif recipe.category == "dinner" %} 🍝 Dinner
+          {% elif recipe.category == "dessert" %} 🍰 Dessert
+          {% elif recipe.category == "vegan" %} 🥗 Vegan
+          {% elif recipe.category == "snack" %} 🍪 Snack
+          {% else %} {{ recipe.category|capfirst }}
+          {% endif %}
+        </p>
         <p>{{ recipe.description }}</p>
+        <p>❤️ Saved by {{ recipe.liked_by.count }} users</p>
 
         {% if recipe.image %}
           <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" width="300">
         {% endif %}
 
-        <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
+        <div class="mt-2">
+          <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
             {% csrf_token %}
             {% if user in recipe.liked_by.all %}
-                <button type="submit">💔 Unsave</button>
+              <button type="submit" class="btn btn-sm btn-outline-danger">💔 Unsave</button>
             {% else %}
-                <button type="submit">❤️ Save</button>
+              <button type="submit" class="btn btn-sm btn-outline-primary">❤️ Save</button>
             {% endif %}
-        </form>
+          </form>
+
+          <a href="{% url 'edit_recipe' recipe.id %}" class="btn btn-sm btn-outline-secondary ms-2">✏️ Edit</a>
+          <a href="{% url 'delete_recipe' recipe.id %}" class="btn btn-sm btn-outline-danger ms-1">🗑️ Delete</a>
+        </div>
       </div>
     {% endfor %}
   {% else %}
