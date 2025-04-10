@@ -1,11 +1,13 @@
 {% extends 'recipes/base.html' %}
 
 {% block content %}
-  <h2>Add a New Recipe</h2>
+  <h2 class="mb-4">Add a New Recipe</h2>
 
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary mt-2">Add Recipe</button>
-  </form>
+  <div class="card shadow p-4" style="max-width: 700px; margin: 0 auto; background-color: rgba(255,255,255,0.95);">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary mt-3">Add Recipe</button>
+    </form>
+  </div>
 {% endblock %}

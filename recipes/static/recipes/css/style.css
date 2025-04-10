@@ -2,20 +2,30 @@ body {
     background: url("/static/recipes/img/bg.png") no-repeat center center fixed;
     background-size: cover;
     background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-position: center center;
     margin: 0;
     padding: 0;
+    font-family: 'Quicksand', sans-serif;
 }
 
-.recipe-card {
-    background-color: rgba(255, 255, 255, 0.9); /* light white overlay */
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+/* Soft gradient overlay */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255, 248, 240, 0.8));
+    z-index: -1;
 }
 
+/* Navbar link color */
+.navbar-nav .nav-link {
+    color: #f6cbb5 !important;
+}
+.navbar-nav .nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* Header / Footer */
 header, footer {
     text-align: center;
     margin-bottom: 20px;
@@ -30,10 +40,11 @@ h2 {
     color: #333;
     border-bottom: 2px solid #ffa07a;
     padding-bottom: 5px;
+    margin-top: 30px;
 }
 
+/* Buttons & Links */
 a, button {
-    background-color: #ffa07a;
     color: white;
     padding: 6px 12px;
     border: none;
@@ -47,31 +58,36 @@ button:hover, a:hover {
     background-color: #e85c00;
 }
 
-img {
-    margin-top: 10px;
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
+/* Recipe Card */
+.recipe-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.recipe-card {
-    background-color: #fff;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.recipe-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .recipe-card h3 {
     margin-top: 0;
     color: #d35400;
+    font-size: 1.5rem;
 }
 
 .recipe-card p {
     margin: 8px 0;
+    color: #333;
 }
 
 .recipe-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
     margin-top: 10px;
-    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }

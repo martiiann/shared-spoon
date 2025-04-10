@@ -1,20 +1,30 @@
 {% extends 'recipes/base.html' %}
 
 {% block content %}
-<h2>Latest Recipes</h2>
+<!-- 🧁 Hero Section -->
+<div class="p-5 mb-4 rounded-3" style="background-color: rgba(255,255,255,0.85); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <div class="container py-3">
+    <h1 class="display-5 fw-bold" style="color: #d76a03;">Welcome to Shared Spoon 🍴</h1>
+    <p class="col-md-8 fs-5" style="color: #333;">
+      Discover, save, and share your favorite recipes in one cozy place. Whether you're a kitchen wizard or just getting started, Shared Spoon is here to inspire.
+    </p>
+    <a href="{% url 'add_recipe' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
+  </div>
+</div>
+
+<h2 class="mt-5">Latest Recipes</h2>
 
 {% for recipe in recipes %}
     <div class="recipe-card">
+        {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+        {% endif %}
         <h3>{{ recipe.title }}</h3>
-        <p><strong>Category:</strong> {{ recipe.category }}</p>
+        <p><strong>🍽️ Category:</strong> {{ recipe.category }}</p>
         <p>{{ recipe.description }}</p>
 
-        {% if recipe.image %}
-            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" width="300">
-        {% endif %}
-
         {% if user.is_authenticated %}
-            <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
+            <form action="{% url 'toggle_favorite' recipe.id %}" method="post">
                 {% csrf_token %}
                 {% if user in recipe.liked_by.all %}
                     <button type="submit">💔 Unsave</button>
@@ -27,5 +37,6 @@
 {% empty %}
     <p>No recipes yet!</p>
 {% endfor %}
+
 
 {% endblock %}
