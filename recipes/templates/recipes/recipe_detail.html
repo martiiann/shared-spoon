@@ -1,8 +1,28 @@
 {% extends 'recipes/base.html' %}
+{% load static %}
+
 
 {% block content %}
   <div class="recipe-card">
     <h2>{{ recipe.title }}</h2>
+
+    <!-- 👤 Author Information -->
+    <div class="d-flex align-items-center mb-3">
+      {% if recipe.user.profile.avatar %}
+      {% if recipe.user.profile.avatar %}
+      <p><strong>Posted by:</strong> {{ recipe.user.username }}</p>
+      <img src="{{ recipe.user.profile.avatar.url }}" alt="{{ recipe.user.username }}'s avatar" style="width: 50px; height: 50px; border-radius: 50%;">
+    {% else %}
+      <p><strong>Posted by:</strong> {{ recipe.user.username }} <em>(no avatar)</em></p>
+    {% endif %}
+             style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
+      {% else %}
+        <img src="{% static 'recipes/img/default-avatar.png' %}" alt="Default avatar"
+             style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
+      {% endif %}
+      <p class="mb-0"><strong>Posted by:</strong> {{ recipe.user.username }}</p>
+    </div>
+
     <p><strong>Category:</strong> {{ recipe.get_category_display }}</p>
 
     {% if recipe.image %}
@@ -20,7 +40,7 @@
     <p><strong>Instructions:</strong></p>
     <p>{{ recipe.instructions }}</p>
 
-    <p>❤️ Saved by {{ recipe.liked_by.count }} users</p>
+    <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
 
     {% if user.is_authenticated %}
       <form action="{% url 'toggle_favorite' recipe.id %}" method="post">
