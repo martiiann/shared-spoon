@@ -8,51 +8,61 @@
     <p class="col-md-8 fs-5" style="color: #333;">
       Discover, save, and share your favorite recipes in one cozy place. Whether you're a kitchen wizard or just getting started, Shared Spoon is here to inspire.
     </p>
-    <a href="{% url 'add_recipe' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
+    {% if user.is_authenticated and user_recipes_count == 0 %}
+      <a href="{% url 'add_recipe' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
+    {% endif %}
   </div>
 </div>
 
 <h2 class="mt-5">Latest Recipes</h2>
+
 <form method="get" class="row g-3 align-items-center mb-4">
-    <div class="col-sm-6">
-      <input type="text" name="q" class="form-control" placeholder="Search recipes..." value="{{ query|default:'' }}">
-    </div>
-    <div class="col-sm-4">
-      <select name="category" class="form-select">
-        <option value="all" {% if selected_category == "all" or not selected_category %}selected{% endif %}>All Categories</option>
-        <option value="breakfast" {% if selected_category == "breakfast" %}selected{% endif %}>Breakfast</option>
-        <option value="lunch" {% if selected_category == "lunch" %}selected{% endif %}>Lunch</option>
-        <option value="dinner" {% if selected_category == "dinner" %}selected{% endif %}>Dinner</option>
-        <option value="dessert" {% if selected_category == "dessert" %}selected{% endif %}>Dessert</option>
-        <option value="vegan" {% if selected_category == "vegan" %}selected{% endif %}>Vegan</option>
-        <option value="snack" {% if selected_category == "snack" %}selected{% endif %}>Snack</option>
-      </select>
-    </div>
-    <div class="col-sm-2">
-      <button type="submit" class="btn btn-primary w-100">Search</button>
-    </div>
-  </form>
-  
-{% for recipe in recipes %}
+  <div class="col-sm-6">
+    <input type="text" name="q" class="form-control" placeholder="Search recipes..." value="{{ query|default:'' }}">
+  </div>
+  <div class="col-sm-4">
+    <select name="category" class="form-select">
+      <option value="all" {% if selected_category == "all" or not selected_category %}selected{% endif %}>All Categories</option>
+      <option value="breakfast" {% if selected_category == "breakfast" %}selected{% endif %}>Breakfast</option>
+      <option value="lunch" {% if selected_category == "lunch" %}selected{% endif %}>Lunch</option>
+      <option value="dinner" {% if selected_category == "dinner" %}selected{% endif %}>Dinner</option>
+      <option value="dessert" {% if selected_category == "dessert" %}selected{% endif %}>Dessert</option>
+      <option value="vegan" {% if selected_category == "vegan" %}selected{% endif %}>Vegan</option>
+      <option value="snack" {% if selected_category == "snack" %}selected{% endif %}>Snack</option>
+    </select>
+  </div>
+  <div class="col-sm-2">
+    <button type="submit" class="btn btn-primary w-100">Search</button>
+  </div>
+</form>
+
+<!-- ⭐ Responsive Grid -->
+<div class="recipe-grid">
+  {% for recipe in recipes %}
     <div class="recipe-card">
-        {% if recipe.image %}
-            <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+      {% if recipe.image %}
+        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+      {% endif %}
+      <h3>{{ recipe.title }}</h3>
+      <p><strong>🍽️ Category:</strong>
+        {% if recipe.category == "breakfast" %} 🥞 Breakfast
+        {% elif recipe.category == "lunch" %} 🥪 Lunch
+        {% elif recipe.category == "dinner" %} 🍝 Dinner
+        {% elif recipe.category == "dessert" %} 🍰 Dessert
+        {% elif recipe.category == "vegan" %} 🥗 Vegan
+        {% elif recipe.category == "snack" %} 🍪 Snack
+        {% else %} {{ recipe.category|capfirst }}
         {% endif %}
-        <h3>{{ recipe.title }}</h3>
-        <p><strong>🍽️ Category:</strong>
-            {% if recipe.category == "breakfast" %} 🥞 Breakfast
-            {% elif recipe.category == "lunch" %} 🥪 Lunch
-            {% elif recipe.category == "dinner" %} 🍝 Dinner
-            {% elif recipe.category == "dessert" %} 🍰 Dessert
-            {% elif recipe.category == "vegan" %} 🥗 Vegan
-            {% elif recipe.category == "snack" %} 🍪 Snack
-            {% else %} {{ recipe.category|capfirst }}
-            {% endif %}
-          </p>
-        <p>{{ recipe.description }}</p>
-        
-        <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
-        {% if user.is_authenticated %}
+      </p>
+
+      <p>
+        {{ recipe.description|truncatechars:200 }}
+        <a href="{% url 'recipe_detail' recipe.id %}">Read More →</a>
+      </p>
+
+      <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
+
+      {% if user.is_authenticated %}
         <form action="{% url 'toggle_favorite' recipe.id %}" method="post" class="mt-2">
           {% csrf_token %}
           {% if user in recipe.liked_by.all %}
@@ -62,11 +72,36 @@
           {% endif %}
         </form>
       {% endif %}
-      
     </div>
-{% empty %}
+  {% empty %}
     <p>No recipes yet!</p>
-{% endfor %}
+  {% endfor %}
+</div>
+
+<!-- 📄 Pagination -->
+{% if page_obj.has_other_pages %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+        </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+        </li>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
 
 
 {% endblock %}

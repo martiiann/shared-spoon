@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import Recipe
 from .forms import RecipeForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
+
 
 
 def index(request):
@@ -16,14 +17,23 @@ def index(request):
 
     if query:
         recipes = recipes.filter(title__icontains=query)
-
     if category and category != 'all':
         recipes = recipes.filter(category=category)
 
+    paginator = Paginator(recipes, 6)  # Show 6 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    user_recipes_count = 0
+    if request.user.is_authenticated:
+        user_recipes_count = Recipe.objects.filter(user=request.user).count()
+
     return render(request, 'recipes/index.html', {
-        'recipes': recipes,
+        'recipes': page_obj.object_list,
+        'page_obj': page_obj,
         'selected_category': category,
         'query': query,
+        'user_recipes_count': user_recipes_count,
     })
 
 
@@ -59,6 +69,7 @@ def my_recipes(request):
     recipes = Recipe.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'recipes/my_recipes.html', {'recipes': recipes})
 
+
 @login_required
 def toggle_favorite(request, recipe_id):
     recipe = Recipe.objects.get(id=recipe_id)
@@ -68,10 +79,12 @@ def toggle_favorite(request, recipe_id):
         recipe.liked_by.add(request.user)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('index')))
 
+
 @login_required
 def my_favorites(request):
     recipes = request.user.favorite_recipes.all().order_by('-created_at')
     return render(request, 'recipes/my_favorites.html', {'recipes': recipes})
+
 
 @login_required
 def edit_recipe(request, recipe_id):
@@ -100,3 +113,9 @@ def delete_recipe(request, recipe_id):
     else:
         messages.error(request, "You can only delete your own recipes.")
     return redirect('my_recipes')
+
+
+def recipe_detail(request, pk):
+    print(f"Recipe detail view triggered for ID {pk}")
+    recipe = get_object_or_404(Recipe, pk=pk)
+    return render(request, 'recipes/recipe_detail.html', {'recipe': recipe})
