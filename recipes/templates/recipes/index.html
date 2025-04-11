@@ -52,17 +52,17 @@
         <p>{{ recipe.description }}</p>
         
         <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
-
         {% if user.is_authenticated %}
-            <form action="{% url 'toggle_favorite' recipe.id %}" method="post">
-                {% csrf_token %}
-                {% if user in recipe.liked_by.all %}
-                    <button type="submit">💔 Unsave</button>
-                {% else %}
-                    <button type="submit">❤️ Save</button>
-                {% endif %}
-            </form>
-        {% endif %}
+        <form action="{% url 'toggle_favorite' recipe.id %}" method="post" class="mt-2">
+          {% csrf_token %}
+          {% if user in recipe.liked_by.all %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">💔 Unsave</button>
+          {% else %}
+            <button type="submit" class="btn btn-sm btn-outline-primary">❤️ Save</button>
+          {% endif %}
+        </form>
+      {% endif %}
+      
     </div>
 {% empty %}
     <p>No recipes yet!</p>

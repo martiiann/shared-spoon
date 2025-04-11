@@ -1,13 +1,21 @@
 {% extends 'recipes/base.html' %}
 
 {% block content %}
-  <h2 class="mb-4">Add a New Recipe</h2>
+  <h2 class="mb-4 text-center">Add a New Recipe</h2>
 
   <div class="card shadow p-4" style="max-width: 700px; margin: 0 auto; background-color: rgba(255,255,255,0.95);">
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-primary mt-3">Add Recipe</button>
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <div class="text-danger small">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-success w-100 mt-3">Add Recipe</button>
     </form>
   </div>
 {% endblock %}
