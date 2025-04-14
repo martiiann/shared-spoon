@@ -2,10 +2,11 @@
 {% load static %}
 
 {% block content %}
+<div class="container" style="max-width: 800px;">
   <div class="recipe-card">
     <h2>{{ recipe.title }}</h2>
 
-    <!-- 👤 Author Information -->
+    <!-- 👤 Author Info with Avatar -->
     <div class="d-flex align-items-center mb-3">
       {% if recipe.user.profile.avatar %}
         <img src="{{ recipe.user.profile.avatar.url }}"
@@ -19,34 +20,42 @@
       <p class="mb-0"><strong>Posted by:</strong> {{ recipe.user.username }}</p>
     </div>
 
-    <p><strong>Category:</strong> {{ recipe.get_category_display }}</p>
+    <!-- Category Badge -->
+    <p><strong>Category:</strong> <span class="badge bg-warning text-dark">{{ recipe.get_category_display }}</span></p>
 
+    <!-- Recipe Image -->
     {% if recipe.image %}
-      <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="img-fluid mb-3">
+      <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="img-fluid rounded shadow-sm mb-3">
     {% else %}
       <p><em>No image available</em></p>
     {% endif %}
 
+    <!-- Description -->
     <p><strong>Description:</strong></p>
     <p>{{ recipe.description }}</p>
 
+    <!-- Ingredients -->
     <p><strong>Ingredients:</strong></p>
     <p>{{ recipe.ingredients }}</p>
 
+    <!-- Instructions -->
     <p><strong>Instructions:</strong></p>
     <p>{{ recipe.instructions }}</p>
 
+    <!-- Favorites -->
     <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
 
+    <!-- Favorite Toggle Button -->
     {% if user.is_authenticated %}
       <form action="{% url 'toggle_favorite' recipe.id %}" method="post">
         {% csrf_token %}
         {% if user in recipe.liked_by.all %}
-          <button type="submit">💔 Unsave</button>
+          <button type="submit" class="btn btn-sm btn-outline-danger">💔 Unsave</button>
         {% else %}
-          <button type="submit">❤️ Save</button>
+          <button type="submit" class="btn btn-sm btn-outline-primary">❤️ Save</button>
         {% endif %}
       </form>
     {% endif %}
   </div>
+</div>
 {% endblock %}
