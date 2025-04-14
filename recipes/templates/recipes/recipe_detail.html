@@ -1,7 +1,6 @@
 {% extends 'recipes/base.html' %}
 {% load static %}
 
-
 {% block content %}
   <div class="recipe-card">
     <h2>{{ recipe.title }}</h2>
@@ -9,15 +8,12 @@
     <!-- 👤 Author Information -->
     <div class="d-flex align-items-center mb-3">
       {% if recipe.user.profile.avatar %}
-      {% if recipe.user.profile.avatar %}
-      <p><strong>Posted by:</strong> {{ recipe.user.username }}</p>
-      <img src="{{ recipe.user.profile.avatar.url }}" alt="{{ recipe.user.username }}'s avatar" style="width: 50px; height: 50px; border-radius: 50%;">
-    {% else %}
-      <p><strong>Posted by:</strong> {{ recipe.user.username }} <em>(no avatar)</em></p>
-    {% endif %}
+        <img src="{{ recipe.user.profile.avatar.url }}"
+             alt="{{ recipe.user.username }}'s avatar"
              style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
       {% else %}
-        <img src="{% static 'recipes/img/default-avatar.png' %}" alt="Default avatar"
+        <img src="{% static 'recipes/img/default-avatar.png' %}"
+             alt="Default avatar"
              style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px;">
       {% endif %}
       <p class="mb-0"><strong>Posted by:</strong> {{ recipe.user.username }}</p>

@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
 from django.core.paginator import Paginator
+from .forms import ProfileForm
 
 # View for the home page
 def index(request):
@@ -117,3 +118,18 @@ def delete_recipe(request, recipe_id):
 def recipe_detail(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     return render(request, 'recipes/recipe_detail.html', {'recipe': recipe})
+
+@login_required
+def profile_view(request):
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile was updated!")
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'recipes/profile.html', {'form': form, 'profile': profile})

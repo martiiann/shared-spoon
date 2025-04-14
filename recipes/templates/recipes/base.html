@@ -52,6 +52,7 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'add_recipe' %}">Add Recipe</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'my_recipes' %}">My Recipes</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'my_favorites' %}">My Favorites</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">My Profile</a></li>
               <li class="nav-item">
                 <form method="POST" action="{% url 'logout' %}" style="display: inline;">
                   {% csrf_token %}
