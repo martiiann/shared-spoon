@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import Recipe
-from .forms import RecipeForm
+from .models import Recipe, Rating
+from .forms import RecipeForm, ProfileForm
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.contrib import messages
 from django.core.paginator import Paginator
-from .forms import ProfileForm
+from django.db.models import Avg
+from django.views.decorators.http import require_POST
 
 # View for the home page
 def index(request):
@@ -28,6 +29,12 @@ def index(request):
     if request.user.is_authenticated:
         user_recipes_count = Recipe.objects.filter(user=request.user).count()
 
+    # Calculate the average rating for each recipe
+    for recipe in recipes:
+        ratings = recipe.ratings.all()
+        avg_rating = ratings.aggregate(Avg('value'))['value__avg']
+        recipe.avg_rating = avg_rating if avg_rating is not None else 0  # Default to 0 if no ratings
+
     return render(request, 'recipes/index.html', {
         'recipes': page_obj.object_list,
         'page_obj': page_obj,
@@ -35,6 +42,7 @@ def index(request):
         'query': query,
         'user_recipes_count': user_recipes_count,
     })
+
 
 # Register view for creating a new account
 def register(request):
@@ -114,11 +122,43 @@ def delete_recipe(request, recipe_id):
         messages.error(request, "You can only delete your own recipes.")
     return redirect('my_recipes')
 
-# View to display the details of a recipe
+# View to display the details of a recipe, including ratings
 def recipe_detail(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
-    return render(request, 'recipes/recipe_detail.html', {'recipe': recipe})
 
+    user_rating = None
+    if request.user.is_authenticated:
+        user_rating = Rating.objects.filter(user=request.user, recipe=recipe).first()
+
+    # Calculate average rating after saving the user's rating
+    ratings = recipe.ratings.all()
+    avg_rating = ratings.aggregate(Avg('value'))['value__avg']
+    avg_rating = avg_rating if avg_rating is not None else 0  # Default to 0 if no ratings
+
+    context = {
+        'recipe': recipe,
+        'user_rating': user_rating,
+        'avg_rating': avg_rating,
+    }
+    return render(request, 'recipes/recipe_detail.html', context)
+
+
+# View to handle rating a recipe
+@require_POST
+def rate_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+
+    if request.user.is_authenticated:
+        value = int(request.POST.get('rating'))
+        rating, created = Rating.objects.update_or_create(
+            user=request.user,
+            recipe=recipe,
+            defaults={'value': value}
+        )
+
+    return redirect('recipe_detail', pk=recipe.id)
+
+# View to display the user's profile and allow profile updates
 @login_required
 def profile_view(request):
     profile = request.user.profile

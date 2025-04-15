@@ -8,16 +8,33 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Quicksand', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
 }
 
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255, 248, 240, 0.8));
-    z-index: -1;
+/* Dark Mode Body */
+body.dark-mode {
+    background: url("/static/recipes/img/bg.png") no-repeat center center fixed;
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center center;
+    color: #fff;
+    position: relative; /* Allow overlay to work */
 }
+
+/* Add a dark overlay on top of the background image */
+body.dark-mode::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Dark overlay */
+    z-index: -1; /* Place the overlay behind the content */
+}
+
+
 
 /* ==== NAVBAR ==== */
 .navbar {
@@ -27,6 +44,11 @@ body::before {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+body.dark-mode .navbar {
+    background: rgba(0, 0, 0, 0.9); /* Darker navbar for dark mode */
+}
+
+/* Navbar text */
 .navbar-nav .nav-link {
     color: #f6cbb5 !important;
     font-weight: 600;
@@ -34,19 +56,19 @@ body::before {
     transition: all 0.3s ease;
 }
 
+body.dark-mode .navbar-nav .nav-link {
+    color: #e0e0e0 !important;
+}
+
+/* Hover effect */
 .navbar-nav .nav-link:hover {
     color: #fff5e0 !important;
     transform: scale(1.05);
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
-.navbar .dropdown-toggle img {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-.navbar .dropdown-toggle:hover img {
-    box-shadow: 0 0 10px #f6cbb5;
-    transform: scale(1.1);
+body.dark-mode .navbar-nav .nav-link:hover {
+    color: #ff69b4 !important;
 }
 
 /* ==== DROPDOWN MENU ==== */
@@ -57,16 +79,29 @@ body::before {
     padding: 0.5rem 0;
 }
 
+body.dark-mode .dropdown-menu {
+    background-color: #333;
+}
+
 .dropdown-menu .dropdown-item {
     transition: all 0.3s ease;
     font-weight: 500;
     color: #2c2c2c;
 }
 
+body.dark-mode .dropdown-menu .dropdown-item {
+    color: #ccc;
+}
+
 .dropdown-menu .dropdown-item:hover {
     background-color: #f6cbb5;
     color: #2c2c2c;
     transform: translateX(4px);
+}
+
+body.dark-mode .dropdown-menu .dropdown-item:hover {
+    background-color: #444;
+    color: #fff;
 }
 
 /* ==== RECIPE CARD ==== */
@@ -82,32 +117,18 @@ body::before {
     word-break: break-word;
 }
 
+body.dark-mode .recipe-card {
+    background: linear-gradient(to bottom right, #333, #444);
+    color: #fff;
+}
+
 .recipe-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
-.recipe-card h3 {
-    margin-top: 0;
-    color: #d35400;
-}
-
-.recipe-card p {
-    margin: 8px 0;
-    color: #444;
-    max-width: 100%;
-    overflow: hidden;
-    white-space: normal;
-    line-height: 1.6;
-}
-
-.recipe-card img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+body.dark-mode .recipe-card:hover {
+    box-shadow: 0 12px 24px rgba(255, 255, 255, 0.2);
 }
 
 /* ==== FORMS & HEADINGS ==== */
@@ -121,10 +142,19 @@ h1 {
     font-size: 2.5rem;
 }
 
+body.dark-mode h1 {
+    color: #ffb84d;
+}
+
 h2 {
     color: #333;
     border-bottom: 2px solid #ffa07a;
     padding-bottom: 5px;
+}
+
+body.dark-mode h2 {
+    color: #fff;
+    border-bottom: 2px solid #ff69b4;
 }
 
 /* ==== BUTTONS ==== */
@@ -140,4 +170,23 @@ a, button {
 
 button:hover, a:hover {
     background-color: #e85c00;
+}
+
+body.dark-mode button:hover, body.dark-mode a:hover {
+    background-color: #ff1493;
+}
+
+/* ==== DARK MODE TOGGLE BUTTON ==== */
+.dark-mode-toggle {
+    background-color: #ff69b4;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+body.dark-mode .dark-mode-toggle {
+    background-color: #ff1493;
 }

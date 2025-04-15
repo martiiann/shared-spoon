@@ -79,6 +79,31 @@
 
       <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
 
+      <!-- ⭐ Average Rating -->
+      <p><strong>Average Rating:</strong>
+        {% if recipe.avg_rating %}
+          {{ recipe.avg_rating|floatformat:1 }} ⭐
+        {% else %}
+          No ratings yet.
+        {% endif %}
+      </p>
+
+      <!-- ⭐ User Rating Form (if user is authenticated) -->
+      {% if user.is_authenticated %}
+        <form action="{% url 'rate_recipe' recipe.id %}" method="post" class="d-flex align-items-center gap-2">
+          {% csrf_token %}
+          <label for="rating" class="mb-0"><strong>Your Rating:</strong></label>
+          <select name="rating" id="rating" class="form-select w-auto">
+            {% for i in "12345" %}
+            <option value="{{ i }}" {% if user_rating and user_rating.value|stringformat:"s" == i %}selected{% endif %}>{{ i }} ⭐</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-sm btn-success">Submit</button>
+        </form>
+      {% else %}
+        <p><em><a href="{% url 'login' %}">Log in</a> to rate this recipe.</em></p>
+      {% endif %}
+
       {% if user.is_authenticated %}
         <form action="{% url 'toggle_favorite' recipe.id %}" method="post" class="mt-2">
           {% csrf_token %}
@@ -89,7 +114,7 @@
           {% endif %}
         </form>
       {% endif %}
-
+      
     </div>
   {% empty %}
     <p>No recipes yet!</p>
