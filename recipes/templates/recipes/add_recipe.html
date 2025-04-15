@@ -1,21 +1,161 @@
 {% extends 'recipes/base.html' %}
+{% load static %}
 
 {% block content %}
-  <h2 class="mb-4 text-center">Add a New Recipe</h2>
-
-  <div class="card shadow p-4" style="max-width: 700px; margin: 0 auto; background-color: rgba(255,255,255,0.95);">
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      {% for field in form %}
-        <div class="mb-3">
-          <label class="form-label">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}
-            <div class="text-danger small">{{ field.errors }}</div>
-          {% endif %}
-        </div>
-      {% endfor %}
-      <button type="submit" class="btn btn-success w-100 mt-3">Add Recipe</button>
-    </form>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow p-4 mb-5 bg-white rounded">
+        <h2 class="mb-4 text-center">Add New Recipe</h2>
+        
+        <form method="POST" enctype="multipart/form-data" id="recipe-form">
+          {% csrf_token %}
+          
+          <!-- Main Recipe Fields -->
+          {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">
+                {{ field.label }}
+                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          
+          <!-- Ingredients Formset -->
+          <div class="mb-4">
+            <h5 class="mb-3">Ingredients <span class="text-danger">*</span></h5>
+            <div id="ingredient-forms">
+              {{ ingredient_formset.management_form }}
+              
+              {% for form in ingredient_formset %}
+                <div class="ingredient-form mb-3 p-3 border rounded">
+                  <div class="row g-2">
+                    <!-- Ingredient Selection -->
+                    <div class="col-md-5">
+                      <label class="form-label">Ingredient</label>
+                      {{ form.ingredient }}
+                    </div>
+                    
+                    <!-- Quantity -->
+                    <div class="col-md-3">
+                      <label class="form-label">Quantity</label>
+                      {{ form.quantity }}
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="col-md-3">
+                      <label class="form-label">Notes</label>
+                      {{ form.notes }}
+                    </div>
+                    
+                    <!-- Delete Checkbox -->
+                    <div class="col-md-1 d-flex align-items-end">
+                      {% if form.DELETE %}
+                        {{ form.DELETE }}
+                        <label for="{{ form.DELETE.id_for_label }}" class="form-check-label ms-1">
+                          <i class="bi bi-trash text-danger"></i>
+                        </label>
+                      {% else %}
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-form">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      {% endif %}
+                      {{ form.id }}
+                    </div>
+                  </div>
+                  {% for error in form.non_field_errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+            
+            <button type="button" id="add-ingredient" class="btn btn-sm btn-outline-primary mt-2">
+              <i class="bi bi-plus-circle"></i> Add Another Ingredient
+            </button>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg">
+              <i class="bi bi-save"></i> Save Recipe
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- Select2 CSS/JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  // Initialize Select2 for ingredient selects
+  $('.ingredient-form select').select2({
+    placeholder: "Select an ingredient",
+    width: '100%'
+  });
+
+  // Add new ingredient form
+  $('#add-ingredient').click(function() {
+    const formIdx = $('#id_ingredients-TOTAL_FORMS').val();
+    const newForm = $('.ingredient-form:first').clone(true);
+    
+    // Update all IDs/names in the cloned form
+    newForm.find(':input').each(function() {
+      const name = $(this).attr('name').replace('-0-', `-${formIdx}-`);
+      const id = $(this).attr('id').replace('-0-', `-${formIdx}-`);
+      $(this).attr({'name': name, 'id': id}).val('').removeAttr('selected');
+    });
+    
+    // Clear values
+    newForm.find('input[type=text], textarea').val('');
+    newForm.find('select').val(null).trigger('change');
+    
+    // Add to formset
+    $('#ingredient-forms').append(newForm);
+    $('#id_ingredients-TOTAL_FORMS').val(parseInt(formIdx) + 1);
+    
+    // Reinitialize Select2
+    newForm.find('select').select2({
+      placeholder: "Select an ingredient",
+      width: '100%'
+    });
+  });
+
+  // Remove ingredient form
+  $(document).on('click', '.remove-form', function() {
+    const form = $(this).closest('.ingredient-form');
+    if ($('.ingredient-form').length > 1) {
+      form.remove();
+      $('#id_ingredients-TOTAL_FORMS').val($('.ingredient-form').length);
+    } else {
+      form.find('input, select').val('');
+      form.find('select').trigger('change');
+    }
+  });
+});
+</script>
+
+<style>
+  .select2-container--default .select2-selection--multiple {
+    border: 1px solid #ced4da;
+    min-height: 38px;
+  }
+  .ingredient-form {
+    background-color: #f8f9fa;
+  }
+</style>
 {% endblock %}

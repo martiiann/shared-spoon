@@ -10,7 +10,7 @@
       Discover, save, and share your favorite recipes in one cozy place.
     </p>
     {% if user.is_authenticated and user_recipes_count == 0 %}
-      <a href="{% url 'add_recipe' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
+    <a href="{% url 'recipes:add' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
     {% endif %}
   </div>
 </div>
@@ -42,7 +42,6 @@
 <div class="recipe-grid">
   {% for recipe in recipes %}
     <div class="recipe-card">
-
       <!-- 👤 Author Info -->
       <div class="d-flex align-items-center mb-2">
         {% if recipe.user.profile.avatar %}
@@ -82,18 +81,18 @@
       <!-- ⭐ Average Rating -->
       <p><strong>Average Rating:</strong>
         {% if recipe.avg_rating %}
-          {{ recipe.avg_rating|floatformat:1 }} ⭐
+          <span id="rating-display-{{ recipe.id }}">{{ recipe.avg_rating|floatformat:1 }} ⭐</span>
         {% else %}
           No ratings yet.
         {% endif %}
       </p>
 
-      <!-- ⭐ User Rating Form (if user is authenticated) -->
+      <!-- ⭐ User Rating Form (AJAX) -->
       {% if user.is_authenticated %}
-        <form action="{% url 'rate_recipe' recipe.id %}" method="post" class="d-flex align-items-center gap-2">
+        <form id="rating-form-{{ recipe.id }}" action="{% url 'rate_recipe' recipe.id %}" method="post" class="d-flex align-items-center gap-2">
           {% csrf_token %}
           <label for="rating" class="mb-0"><strong>Your Rating:</strong></label>
-          <select name="rating" id="rating" class="form-select w-auto">
+          <select name="rating" id="rating-{{ recipe.id }}" class="form-select w-auto">
             {% for i in "12345" %}
             <option value="{{ i }}" {% if user_rating and user_rating.value|stringformat:"s" == i %}selected{% endif %}>{{ i }} ⭐</option>
             {% endfor %}
@@ -103,43 +102,36 @@
       {% else %}
         <p><em><a href="{% url 'login' %}">Log in</a> to rate this recipe.</em></p>
       {% endif %}
-
-      {% if user.is_authenticated %}
-        <form action="{% url 'toggle_favorite' recipe.id %}" method="post" class="mt-2">
-          {% csrf_token %}
-          {% if user in recipe.liked_by.all %}
-            <button type="submit" class="btn btn-sm btn-outline-danger">💔 Unsave</button>
-          {% else %}
-            <button type="submit" class="btn btn-sm btn-outline-primary">❤️ Save</button>
-          {% endif %}
-        </form>
-      {% endif %}
       
     </div>
   {% empty %}
-    <p>No recipes yet!</p>
+    <p class="alert alert-info text-center">No recipes yet! Be the first to add a recipe!</p>
   {% endfor %}
 </div>
 
 <!-- 📄 Pagination -->
 {% if page_obj.has_other_pages %}
-  <nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap">
       {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+          <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">&laquo; First</a>
         </li>
       {% endif %}
-
+      
       {% for num in page_obj.paginator.page_range %}
-        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-          <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-        </li>
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+          </li>
+        {% endif %}
       {% endfor %}
-
+      
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last &raquo;</a>
         </li>
       {% endif %}
     </ul>
@@ -147,3 +139,53 @@
 {% endif %}
 
 {% endblock %}
+
+<!-- Add this script to handle AJAX submission -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form[id^="rating-form-"]').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = this;
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button.innerHTML;
+      
+      try {
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        button.disabled = true;
+        
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: new FormData(form)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update rating display
+          const ratingDisplay = document.getElementById(`rating-display-${form.dataset.recipeId}`);
+          if (ratingDisplay) {
+            ratingDisplay.textContent = `${data.avg_rating} ⭐ (${data.rating_count})`;
+          }
+          
+          // Visual feedback
+          button.innerHTML = '✓ Rated!';
+          setTimeout(() => {
+            button.innerHTML = 'Update Rating';
+            button.disabled = false;
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        button.innerHTML = 'Try Again';
+        button.disabled = false;
+      }
+    });
+  });
+});
+  </script>
+  
