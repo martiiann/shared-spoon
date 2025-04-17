@@ -9,6 +9,8 @@ from django.db.models import Avg, Q
 from django.views.decorators.http import require_POST
 from .models import Recipe, Rating, Profile, RecipeIngredient, Ingredient
 from .forms import RecipeForm, ProfileForm, RecipeIngredientFormSet
+from django.views.generic import DetailView
+from .models import Ingredient
 
 def index(request):
     """
@@ -260,20 +262,26 @@ def profile_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated!")
-            return redirect('profile')
+            return redirect('recipes:profile')  # Added namespace here
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'recipes/profile.html', {'form': form})
 
 @login_required
 def manage_ingredients(request):
-    """
-    AJAX endpoint for ingredient search (used by Select2)
-    """
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        query = request.POST.get('q', '')
+    query = request.GET.get('q', '')
+    if query:
         ingredients = Ingredient.objects.filter(
             name__icontains=query
         ).values('id', 'name')[:10]
-        return JsonResponse(list(ingredients), safe=False)
-    return JsonResponse([], safe=False)
+        
+        return JsonResponse({
+            'results': [{'id': i['id'], 'text': i['name']} for i in ingredients]
+        })
+    
+    return JsonResponse({'results': []})
+
+class IngredientDetailView(DetailView):
+    model = Ingredient
+    template_name = 'recipes/recipe_detail.html'  
+    context_object_name = 'recipe'  

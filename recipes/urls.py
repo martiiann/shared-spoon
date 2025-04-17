@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import IngredientDetailView  # Import the IngredientDetailView
 
 app_name = 'recipes'  
 
@@ -26,5 +27,8 @@ urlpatterns = [
     path('account/profile/', views.profile_view, name='profile'),
     
     # AJAX endpoints
-    path('api/ingredients/', views.manage_ingredients, name='ingredient_search'),  
+    path('api/ingredients/', views.manage_ingredients, name='ingredient_search'), 
+
+    # Ingredient detail view
+    path('ingredients/<int:pk>/', IngredientDetailView.as_view(), name='ingredient_detail'), 
 ]

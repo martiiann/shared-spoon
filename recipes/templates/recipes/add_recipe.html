@@ -40,7 +40,18 @@
                     <!-- Ingredient Selection -->
                     <div class="col-md-5">
                       <label class="form-label">Ingredient</label>
-                      {{ form.ingredient }}
+                      <select name="{{ form.ingredient.html_name }}"
+                              id="{{ form.ingredient.id_for_label }}"
+                              class="ingredient-select form-control">
+                        {% if form.ingredient.value %}
+                          <option value="{{ form.ingredient.value }}" selected>
+                            {{ form.instance.ingredient.name }}
+                          </option>
+                        {% endif %}
+                      </select>
+                      {% for error in form.ingredient.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                      {% endfor %}
                     </div>
                     
                     <!-- Quantity -->
@@ -55,18 +66,11 @@
                       {{ form.notes }}
                     </div>
                     
-                    <!-- Delete Checkbox -->
+                    <!-- Delete Button -->
                     <div class="col-md-1 d-flex align-items-end">
-                      {% if form.DELETE %}
-                        {{ form.DELETE }}
-                        <label for="{{ form.DELETE.id_for_label }}" class="form-check-label ms-1">
-                          <i class="bi bi-trash text-danger"></i>
-                        </label>
-                      {% else %}
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-form">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      {% endif %}
+                      <button type="button" class="btn btn-sm btn-outline-danger remove-form">
+                        <i class="bi bi-trash"></i>
+                      </button>
                       {{ form.id }}
                     </div>
                   </div>
@@ -93,69 +97,109 @@
   </div>
 </div>
 
-<!-- Select2 CSS/JS -->
+<!-- Select2 + Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<!-- Select2 Styling for Bootstrap -->
+<style>
+.select2-container--bootstrap-5 .select2-selection {
+  min-height: 38px;
+  padding: 5px 11px;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+  height: 36px;
+}
+</style>
+
 <script>
-$(document).ready(function() {
-  // Initialize Select2 for ingredient selects
-  $('.ingredient-form select').select2({
-    placeholder: "Select an ingredient",
-    width: '100%'
-  });
-
-  // Add new ingredient form
-  $('#add-ingredient').click(function() {
-    const formIdx = $('#id_ingredients-TOTAL_FORMS').val();
-    const newForm = $('.ingredient-form:first').clone(true);
-    
-    // Update all IDs/names in the cloned form
-    newForm.find(':input').each(function() {
-      const name = $(this).attr('name').replace('-0-', `-${formIdx}-`);
-      const id = $(this).attr('id').replace('-0-', `-${formIdx}-`);
-      $(this).attr({'name': name, 'id': id}).val('').removeAttr('selected');
-    });
-    
-    // Clear values
-    newForm.find('input[type=text], textarea').val('');
-    newForm.find('select').val(null).trigger('change');
-    
-    // Add to formset
-    $('#ingredient-forms').append(newForm);
-    $('#id_ingredients-TOTAL_FORMS').val(parseInt(formIdx) + 1);
-    
-    // Reinitialize Select2
-    newForm.find('select').select2({
-      placeholder: "Select an ingredient",
-      width: '100%'
-    });
-  });
-
-  // Remove ingredient form
-  $(document).on('click', '.remove-form', function() {
-    const form = $(this).closest('.ingredient-form');
-    if ($('.ingredient-form').length > 1) {
-      form.remove();
-      $('#id_ingredients-TOTAL_FORMS').val($('.ingredient-form').length);
-    } else {
-      form.find('input, select').val('');
-      form.find('select').trigger('change');
+  $(document).ready(function () {
+    function initializeSelect2(element) {
+      element.select2({
+        placeholder: "Search for an ingredient...",
+        width: '100%',
+        ajax: {
+          url: '/api/ingredients/',  // Ensure this is the correct API endpoint for ingredients
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+            return {
+              q: params.term,  // 'q' is the search query
+              page: params.page || 1
+            };
+          },
+          processResults: function (data) {
+            return {
+              results: $.map(data.results, function (item) {
+                return {
+                  text: item.text,  // Display name of the ingredient
+                  id: item.id  // The unique ID for the ingredient
+                };
+              })
+            };
+          },
+          cache: true
+        },
+        minimumInputLength: 2  // Start searching when user types 2 or more characters
+      });
     }
+
+    // Initialize existing ingredient selects on page load
+    $('.ingredient-select').each(function () {
+      initializeSelect2($(this));
+    });
+
+    // Add a new ingredient form dynamically
+    $('#add-ingredient').click(function () {
+      const formIdx = $('#id_ingredients-TOTAL_FORMS').val();
+      const newForm = $('.ingredient-form:first').clone(true);
+
+      // Update name and ID attributes for the new form
+      newForm.find(':input').each(function () {
+        const name = $(this).attr('name');
+        const id = $(this).attr('id');
+        if (name) {
+          $(this).attr('name', name.replace(/-\d+-/, `-${formIdx}-`));
+        }
+        if (id) {
+          $(this).attr('id', id.replace(/-\d+-/, `-${formIdx}-`));
+        }
+        if ($(this).is('select')) {
+          $(this).empty(); // Reset the select field
+        } else {
+          $(this).val('');  // Clear other fields
+        }
+      });
+
+      // Append and re-initialize Select2 for the new form
+      newForm.appendTo('#ingredient-forms');
+      initializeSelect2(newForm.find('.ingredient-select'));
+      $('#id_ingredients-TOTAL_FORMS').val(parseInt(formIdx) + 1);  // Update the total form count
+    });
+
+    // Remove an ingredient form dynamically
+    $(document).on('click', '.remove-form', function () {
+      $(this).closest('.ingredient-form').remove();
+      const forms = $('.ingredient-form');
+      $('#id_ingredients-TOTAL_FORMS').val(forms.length);  // Update the total form count
+
+      // Re-index names and ids of the remaining forms
+      forms.each(function (index) {
+        $(this).find(':input').each(function () {
+          const name = $(this).attr('name');
+          const id = $(this).attr('id');
+          if (name) {
+            $(this).attr('name', name.replace(/-\d+-/, `-${index}-`));
+          }
+          if (id) {
+            $(this).attr('id', id.replace(/-\d+-/, `-${index}-`));
+          }
+        });
+      });
+    });
   });
-});
 </script>
 
-<style>
-  .select2-container--default .select2-selection--multiple {
-    border: 1px solid #ced4da;
-    min-height: 38px;
-  }
-  .ingredient-form {
-    background-color: #f8f9fa;
-  }
-</style>
 {% endblock %}
