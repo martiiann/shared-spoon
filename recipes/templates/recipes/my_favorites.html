@@ -10,7 +10,7 @@
           <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" style="width: 100%; height: 200px; object-fit: cover;">
         {% endif %}
 
-        <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.title }}</a></h3>
+        <h3><a href="{% url 'recipes:detail' recipe.id %}">{{ recipe.title }}</a></h3>
 
         <p><strong>Category:</strong> {{ recipe.get_category_display }}</p>
 
@@ -22,14 +22,15 @@
         {% endif %}
 
         <p>{{ recipe.description|truncatechars:200 }}</p>
-        <a href="{% url 'recipe_detail' recipe.id %}">Read More →</a>
+        <a href="{% url 'recipes:detail' recipe.id %}">Read More →</a>
 
         <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
 
-        <form action="{% url 'toggle_favorite' recipe.id %}" method="post">
+        <form action="{% url 'recipes:favorite' recipe.id %}" method="post">
           {% csrf_token %}
           <button type="submit" class="btn btn-sm btn-outline-danger mt-2">💔 Unsave</button>
         </form>
+        
       </div>
     {% endfor %}
   {% else %}

@@ -17,13 +17,13 @@ def index(request):
     Homepage view showing all recipes with filtering and pagination
     """
     recipes = Recipe.objects.annotate(
-        avg_rating=Avg('ratings__value')
+        avg_rating=Avg('ratings__value')  # This is how we calculate the average rating dynamically
     ).prefetch_related(
         'recipe_ingredients__ingredient',
         'ratings'
     ).order_by('-created_at')
 
-    # Filtering
+    # Filtering and pagination code
     query = request.GET.get('q')
     category = request.GET.get('category')
     
@@ -37,7 +37,6 @@ def index(request):
     if category and category != 'all':
         recipes = recipes.filter(category=category)
 
-    # Pagination
     paginator = Paginator(recipes, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -48,6 +47,8 @@ def index(request):
         'query': query,
         'user_recipes_count': request.user.recipes.count() if request.user.is_authenticated else 0,
     })
+
+
 
 def register(request):
     """
@@ -109,11 +110,8 @@ def add_recipe(request):
     })
 
 @login_required
-def edit_recipe(request, recipe_id):
-    """
-    View for editing existing recipes with ingredients formset
-    """
-    recipe = get_object_or_404(Recipe, id=recipe_id, user=request.user)
+def edit_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
     
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
@@ -201,7 +199,9 @@ def recipe_detail(request, pk):
     Detailed view for a single recipe
     """
     recipe = get_object_or_404(
-        Recipe.objects.prefetch_related(
+        Recipe.objects.annotate(
+            avg_rating=Avg('ratings__value')  # Calculating the average rating here
+        ).prefetch_related(
             'recipe_ingredients__ingredient',
             'ratings'
         ),
@@ -218,22 +218,19 @@ def recipe_detail(request, pk):
     context = {
         'recipe': recipe,
         'user_rating': user_rating,
-        'avg_rating': recipe.ratings.aggregate(Avg('value'))['value__avg'] or 0,
+        'avg_rating': recipe.avg_rating or 0,  # This is now available
     }
     return render(request, 'recipes/recipe_detail.html', context)
 
 @require_POST
 def rate_recipe(request, recipe_id):
-    """
-    AJAX view for rating recipes
-    """
     if request.user.is_authenticated and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         try:
-            recipe = Recipe.objects.get(pk=recipe_id)
+            recipe = Recipe.objects.get(id=recipe_id)
             rating_value = int(request.POST.get('rating'))
             
             if not 1 <= rating_value <= 5:
-                return JsonResponse({'error': 'Rating must be 1-5'}, status=400)
+                return JsonResponse({'error': 'Rating must be between 1 and 5'}, status=400)
             
             rating, created = Rating.objects.update_or_create(
                 user=request.user,
@@ -247,9 +244,10 @@ def rate_recipe(request, recipe_id):
                 'rating_count': recipe.ratings.count(),
                 'user_rating': rating_value
             })
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        except Recipe.DoesNotExist:
+            return JsonResponse({'error': 'Recipe not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
 
 @login_required
 def profile_view(request):

@@ -7,7 +7,7 @@
     {% for recipe in recipes %}
       <div class="recipe-card">
         <h3>{{ recipe.title }}</h3>
-        <p><strong>Category:</strong>
+        <p><strong>Category:</strong> 
           {% if recipe.category == "breakfast" %} 🥞 Breakfast
           {% elif recipe.category == "lunch" %} 🥪 Lunch
           {% elif recipe.category == "dinner" %} 🍝 Dinner
@@ -25,17 +25,8 @@
         {% endif %}
 
         <div class="mt-2">
-          <form action="{% url 'toggle_favorite' recipe.id %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            {% if user in recipe.liked_by.all %}
-              <button type="submit" class="btn btn-sm btn-outline-danger">💔 Unsave</button>
-            {% else %}
-              <button type="submit" class="btn btn-sm btn-outline-primary">❤️ Save</button>
-            {% endif %}
-          </form>
-
-          <a href="{% url 'edit_recipe' recipe.id %}" class="btn btn-sm btn-outline-secondary ms-2">✏️ Edit</a>
-          <a href="{% url 'delete_recipe' recipe.id %}" class="btn btn-sm btn-outline-danger ms-1">🗑️ Delete</a>
+          <a href="{% url 'recipes:edit_recipe' recipe.id %}" class="btn btn-sm btn-outline-secondary ms-2">✏️ Edit</a>
+          <a href="{% url 'recipes:delete_recipe' recipe.id %}" class="btn btn-sm btn-outline-danger ms-1">🗑️ Delete</a>
         </div>
       </div>
     {% endfor %}

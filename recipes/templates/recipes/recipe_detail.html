@@ -63,7 +63,7 @@
             You rated this {{ user_rating.value }} ⭐
           </div>
         {% else %}
-          <form id="rating-form" method="POST" action="{% url 'rate_recipe' recipe.id %}">
+        <form id="rating-form" method="POST" action="{% url 'rate_recipe' recipe.id %}">
             {% csrf_token %}
             <h5>Rate this recipe:</h5>
             <div class="d-flex align-items-center gap-3">

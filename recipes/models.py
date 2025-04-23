@@ -107,13 +107,7 @@ class Recipe(models.Model):
     def get_absolute_url(self):
         return reverse('recipe_detail', kwargs={'pk': self.pk, 'slug': self.slug})
 
-    @property
-    def avg_rating(self):
-        """Calculate average rating with caching"""
-        if not hasattr(self, '_avg_rating'):
-            self._avg_rating = self.ratings.aggregate(Avg('value'))['value__avg'] or 0
-        return self._avg_rating
-
+    
     @property
     def rating_count(self):
         """Count of all ratings with caching"""
