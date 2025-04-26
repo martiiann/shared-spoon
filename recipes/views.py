@@ -1,285 +1,238 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
-from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Avg, Q
-from django.views.decorators.http import require_POST
-from .models import Recipe, Rating, Profile, RecipeIngredient, Ingredient
-from .forms import RecipeForm, ProfileForm, RecipeIngredientFormSet
-from django.views.generic import DetailView
-from .models import Ingredient
+from django.http import JsonResponse
+from .models import Recipe, Rating, Profile, Ingredient
+from .forms import RecipeForm, RecipeIngredientFormSet
+from django.db.models import Avg
 
+
+# Homepage (Index)
 def index(request):
-    """
-    Homepage view showing all recipes with filtering and pagination
-    """
-    recipes = Recipe.objects.annotate(
-        avg_rating=Avg('ratings__value')  # This is how we calculate the average rating dynamically
-    ).prefetch_related(
-        'recipe_ingredients__ingredient',
-        'ratings'
-    ).order_by('-created_at')
-
-    # Filtering and pagination code
     query = request.GET.get('q')
-    category = request.GET.get('category')
-    
-    if query:
-        recipes = recipes.filter(
-            Q(title__icontains=query) | 
-            Q(description__icontains=query) |
-            Q(recipe_ingredients__ingredient__name__icontains=query)
-        ).distinct()
-        
-    if category and category != 'all':
-        recipes = recipes.filter(category=category)
+    selected_category = request.GET.get('category', 'all')
 
-    paginator = Paginator(recipes, 6)
+    recipes = Recipe.objects.all()
+
+    if query:
+        recipes = recipes.filter(title__icontains=query)
+
+    if selected_category and selected_category != 'all':
+        recipes = recipes.filter(category=selected_category)
+
+    paginator = Paginator(recipes, 6)  # 6 recipes per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'recipes/index.html', {
+    user_recipes_count = 0
+    if request.user.is_authenticated:
+        user_recipes_count = Recipe.objects.filter(user=request.user).count()
+
+    
+        user_ratings = Rating.objects.filter(user=request.user, recipe__in=page_obj).select_related('recipe')
+        rating_dict = {r.recipe.id: r for r in user_ratings}
+        for recipe in page_obj:
+            recipe.user_rating = rating_dict.get(recipe.id)
+
+    context = {
         'page_obj': page_obj,
-        'selected_category': category,
         'query': query,
-        'user_recipes_count': request.user.recipes.count() if request.user.is_authenticated else 0,
-    })
+        'selected_category': selected_category,
+        'user_recipes_count': user_recipes_count,
+    }
+    return render(request, 'recipes/index.html', context)
 
-
-
+# Register User
 def register(request):
-    """
-    User registration view
-    """
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            Profile.objects.create(user=user)  # Auto-create profile
-            messages.success(request, "Account created! You can now log in.")
+            form.save()
+            messages.success(request, 'Account created successfully! You can now log in.')
             return redirect('login')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+# Add Recipe
 @login_required
 def add_recipe(request):
-    """
-    View for adding new recipes with ingredients formset
-    """
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
-        formset = RecipeIngredientFormSet(request.POST, prefix='ingredients')
-        
+        formset = RecipeIngredientFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
-            try:
-                recipe = form.save(commit=False)
-                recipe.user = request.user
-                recipe.save()
-                
-                # Save ingredients with order
-                instances = formset.save(commit=False)
-                for idx, instance in enumerate(instances):
-                    instance.recipe = recipe
-                    instance.order = idx
-                    instance.save()
-                
-                messages.success(request, "Recipe added successfully!")
-                return redirect('my_recipes')
-                
-            except Exception as e:
-                messages.error(request, f"Error saving recipe: {str(e)}")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
-            for form in formset.forms:
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        messages.error(request, f"Ingredient {field}: {error}")
+            recipe = form.save(commit=False)
+            recipe.user = request.user
+            recipe.save()
+            formset.instance = recipe
+            formset.save()
+            messages.success(request, 'Recipe added successfully!')
+            return redirect('recipes:my')
     else:
         form = RecipeForm()
-        formset = RecipeIngredientFormSet(prefix='ingredients', queryset=RecipeIngredient.objects.none())
-    
+        formset = RecipeIngredientFormSet()
+
     return render(request, 'recipes/add_recipe.html', {
         'form': form,
-        'ingredient_formset': formset
+        'formset': formset,
     })
 
+# Ingredient Search (AJAX API) — THIS IS CORRECT NOW
+def manage_ingredients(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        q = request.GET.get('q', '')
+        ingredients = Ingredient.objects.filter(name__icontains=q).order_by('name')
+        results = [{'id': ing.id, 'text': ing.name} for ing in ingredients]
+        return JsonResponse({'results': results})
+    return JsonResponse({'results': []})
+
+# Edit Recipe
 @login_required
 def edit_recipe(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
-    
+
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
-        formset = RecipeIngredientFormSet(
-            request.POST, 
-            prefix='ingredients',
-            instance=recipe
-        )
-        
-        if form.is_valid() and formset.is_valid():
+        if form.is_valid():
             form.save()
-            
-            # Update ingredients with order
-            instances = formset.save(commit=False)
-            for idx, instance in enumerate(instances):
-                instance.order = idx
-                instance.save()
-            formset.save_m2m()
-            
-            # Delete marked ingredients
-            for obj in formset.deleted_objects:
-                obj.delete()
-                
-            messages.success(request, "Recipe updated!")
-            return redirect('my_recipes')
+            messages.success(request, 'Recipe updated successfully!')
+            return redirect('recipes:my')
     else:
         form = RecipeForm(instance=recipe)
-        formset = RecipeIngredientFormSet(
-            prefix='ingredients',
-            instance=recipe
-        )
-    
-    return render(request, 'recipes/edit_recipe.html', {
-        'form': form,
-        'ingredient_formset': formset,
-        'recipe': recipe
-    })
+    return render(request, 'recipes/edit_recipe.html', {'form': form})
 
+# Delete Recipe
+@login_required
+def delete_recipe(request, pk):
+    recipe = get_object_or_404(Recipe, pk=pk, user=request.user)
+    if request.method == 'POST':
+        recipe.delete()
+        messages.success(request, 'Recipe deleted successfully.')
+        return redirect('recipes:my')
+    return render(request, 'recipes/delete_recipe.html', {'recipe': recipe})
+
+def recipe_list(request):
+    # Get search query and category filter
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', 'all')
+    
+    # Start with all recipes
+    recipes = Recipe.objects.all()
+    
+    # Apply filters
+    if query:
+        recipes = recipes.filter(title__icontains=query)
+    
+    if category != 'all':
+        recipes = recipes.filter(category=category)
+    
+    # Add user rating information if authenticated
+    if request.user.is_authenticated:
+        # Prefetch ratings for efficiency
+        user_ratings = Rating.objects.filter(
+            user=request.user,
+            recipe__in=recipes
+        ).select_related('recipe')
+        
+        # Create a dictionary for quick lookup
+        rating_dict = {rating.recipe_id: rating for rating in user_ratings}
+        
+        # Add user_rating to each recipe
+        for recipe in recipes:
+            recipe.user_rating = rating_dict.get(recipe.id)
+    
+    # Count user's recipes (for the "Add Your First Recipe" button)
+    user_recipes_count = 0
+    if request.user.is_authenticated:
+        user_recipes_count = Recipe.objects.filter(user=request.user).count()
+    
+    # Pagination
+    paginator = Paginator(recipes, 12)  # Show 12 recipes per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'selected_category': category,
+        'user_recipes_count': user_recipes_count,
+    }
+    return render(request, 'recipes/index.html', context)
+
+# My Recipes (List only user's own recipes)
 @login_required
 def my_recipes(request):
-    """
-    View showing all recipes by the current user
-    """
-    recipes = Recipe.objects.filter(user=request.user).prefetch_related(
-        'recipe_ingredients__ingredient'
-    ).order_by('-created_at')
-    return render(request, 'recipes/my_recipes.html', {'recipes': recipes})
+    recipes = Recipe.objects.filter(user=request.user)
+    paginator = Paginator(recipes, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
+    return render(request, 'recipes/my_recipes.html', {'page_obj': page_obj})
+
+# Toggle Favorite
 @login_required
 def toggle_favorite(request, recipe_id):
-    """
-    View to add/remove recipe from favorites
-    """
     recipe = get_object_or_404(Recipe, id=recipe_id)
+
     if recipe.liked_by.filter(id=request.user.id).exists():
         recipe.liked_by.remove(request.user)
-        messages.success(request, "Removed from favorites!")
+        messages.info(request, 'Removed from favorites.')
     else:
         recipe.liked_by.add(request.user)
-        messages.success(request, "Added to favorites!")
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('index')))
+        messages.success(request, 'Recipe saved to favorites!')
 
+    # Instead of redirecting to favorites, redirect back to the same page
+    return redirect(request.META.get('HTTP_REFERER', 'recipes:index'))
+
+# My Favorites
 @login_required
 def my_favorites(request):
-    """
-    View showing all favorited recipes
-    """
-    recipes = request.user.favorite_recipes.prefetch_related(
-        'recipe_ingredients__ingredient'
-    ).order_by('-created_at')
-    return render(request, 'recipes/my_favorites.html', {'recipes': recipes})
+    recipes = Recipe.objects.filter(liked_by=request.user)
+    paginator = Paginator(recipes, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-@login_required
-def delete_recipe(request, recipe_id):
-    """
-    View to delete a recipe
-    """
-    recipe = get_object_or_404(Recipe, id=recipe_id, user=request.user)
-    recipe.delete()
-    messages.success(request, "Recipe deleted!")
-    return redirect('my_recipes')
+    return render(request, 'recipes/my_favorites.html', {'page_obj': page_obj})
 
+# Recipe Detail Page
 def recipe_detail(request, pk):
-    """
-    Detailed view for a single recipe
-    """
-    recipe = get_object_or_404(
-        Recipe.objects.annotate(
-            avg_rating=Avg('ratings__value')  # Calculating the average rating here
-        ).prefetch_related(
-            'recipe_ingredients__ingredient',
-            'ratings'
-        ),
-        pk=pk
-    )
-    
+    recipe = get_object_or_404(Recipe, pk=pk)
+
     user_rating = None
     if request.user.is_authenticated:
-        user_rating = Rating.objects.filter(
-            user=request.user,
-            recipe=recipe
-        ).first()
+        user_rating = Rating.objects.filter(user=request.user, recipe=recipe).first()
+
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = recipe.liked_by.filter(id=request.user.id).exists()
 
     context = {
         'recipe': recipe,
         'user_rating': user_rating,
-        'avg_rating': recipe.avg_rating or 0,  # This is now available
+        'is_favorite': is_favorite,
     }
     return render(request, 'recipes/recipe_detail.html', context)
 
-@require_POST
+# Rate Recipe
+@login_required
 def rate_recipe(request, recipe_id):
-    if request.user.is_authenticated and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        try:
-            recipe = Recipe.objects.get(id=recipe_id)
-            rating_value = int(request.POST.get('rating'))
-            
-            if not 1 <= rating_value <= 5:
-                return JsonResponse({'error': 'Rating must be between 1 and 5'}, status=400)
-            
-            rating, created = Rating.objects.update_or_create(
-                user=request.user,
-                recipe=recipe,
-                defaults={'value': rating_value}
-            )
-            
-            return JsonResponse({
-                'success': True,
-                'avg_rating': recipe.avg_rating,
-                'rating_count': recipe.ratings.count(),
-                'user_rating': rating_value
-            })
-        except Recipe.DoesNotExist:
-            return JsonResponse({'error': 'Recipe not found'}, status=404)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        value = int(request.POST.get('rating', 0))
+        rating, created = Rating.objects.update_or_create(
+            user=request.user, recipe=recipe,
+            defaults={'value': value}
+        )
+        avg_rating = Rating.objects.filter(recipe=recipe).aggregate(avg=Avg('value'))['avg']
+        rating_count = Rating.objects.filter(recipe=recipe).count()
+        return JsonResponse({'success': True, 'avg_rating': round(avg_rating, 1), 'rating_count': rating_count})
+    return JsonResponse({'success': False})
 
-
+# Profile View
 @login_required
 def profile_view(request):
-    """
-    View for user profile management
-    """
-    profile = request.user.profile
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated!")
-            return redirect('recipes:profile')  # Added namespace here
-    else:
-        form = ProfileForm(instance=profile)
-    return render(request, 'recipes/profile.html', {'form': form})
-
-@login_required
-def manage_ingredients(request):
-    query = request.GET.get('q', '')
-    if query:
-        ingredients = Ingredient.objects.filter(
-            name__icontains=query
-        ).values('id', 'name')[:10]
-        
-        return JsonResponse({
-            'results': [{'id': i['id'], 'text': i['name']} for i in ingredients]
-        })
-    
-    return JsonResponse({'results': []})
-
-class IngredientDetailView(DetailView):
-    model = Ingredient
-    template_name = 'recipes/recipe_detail.html'  
-    context_object_name = 'recipe'  
+    profile = get_object_or_404(Profile, user=request.user)
+    return render(request, 'recipes/profile.html', {'profile': profile})

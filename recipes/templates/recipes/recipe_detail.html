@@ -19,7 +19,18 @@
         {% else %} {{ recipe.category|capfirst }}
         {% endif %}
       </p>
-      
+
+      {% if user.is_authenticated %}
+      <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %}">
+          ❤️ {% if is_favorite %} Unsave {% else %} Save {% endif %}
+        </button>
+      </form>
+      {% else %}
+      <small><a href="{% url 'login' %}">Login to save ❤️</a></small>
+      {% endif %}
+
       <p><strong>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</strong></p>
       
       <p><strong>⭐ Rating:</strong> 
@@ -63,7 +74,7 @@
             You rated this {{ user_rating.value }} ⭐
           </div>
         {% else %}
-        <form id="rating-form" method="POST" action="{% url 'rate_recipe' recipe.id %}">
+        <form id="rating-form" method="POST" action="{% url 'recipes:rate_recipe' recipe_id=recipe.id %}">
             {% csrf_token %}
             <h5>Rate this recipe:</h5>
             <div class="d-flex align-items-center gap-3">
@@ -87,6 +98,7 @@
     </div>
   {% endif %}
 </div>
+
 
 <!-- JavaScript -->
 <script>

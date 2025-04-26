@@ -1,46 +1,35 @@
 function toggleDarkMode() {
     const body = document.body;
     const icon = document.querySelector('.dark-mode-toggle i');
-  
-    // Toggle the dark mode class on body
+
+    // Toggle the dark mode class
     body.classList.toggle('dark-mode');
-  
-    // Change icon based on the mode
+
     if (body.classList.contains('dark-mode')) {
-      icon.classList.remove('fa-moon');
-      icon.classList.add('fa-sun');
+        // Switch icon and save preference
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('darkMode', 'enabled');
     } else {
-      icon.classList.remove('fa-sun');
-      icon.classList.add('fa-moon');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('darkMode', 'disabled');
     }
-  
-    // Save the dark mode preference to localStorage
-    if (window.localStorage) {
-      localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
-    }
-  }
-  
-  // Load dark mode on page load based on localStorage or system preference
-  document.addEventListener('DOMContentLoaded', function () {
-    const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+}
+
+// Check dark mode status on page load
+document.addEventListener('DOMContentLoaded', function () {
+    const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
     const prefersDarkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     const body = document.body;
     const icon = document.querySelector('.dark-mode-toggle i');
-  
-    // Apply dark mode if it was previously enabled or if system prefers dark mode
-    if (darkModeEnabled) {
-      body.classList.add('dark-mode');
-      if (icon) {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      }
-    } else if (prefersDarkScheme) {
-      body.classList.add('dark-mode');
-      if (icon) {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      }
+
+    if (darkModeEnabled || (!localStorage.getItem('darkMode') && prefersDarkScheme)) {
+        // Apply dark mode if enabled or preferred by system
+        body.classList.add('dark-mode');
+        if (icon) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
     }
-  });
-  
-  
+});
