@@ -220,3 +220,69 @@ body.dark-mode .btn-warning:hover {
         margin-left: 10px;
     }
 }
+
+/* Profile Card Styles */
+.card-profile {
+    background: linear-gradient(to top right, #ffffff, #f9f9f9);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  
+  /* Avatar nice hover */
+  #avatarPreview {
+    transition: all 0.3s ease;
+  }
+  #avatarPreview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  
+/* Upload Avatar Button */
+.btn-upload-avatar {
+    background-color: #198754;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 24px;
+    border-radius: 30px;
+    display: inline-block;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  .btn-upload-avatar:hover {
+    background-color: #157347;
+  }
+  
+  /* Save Profile Button */
+  .btn-save-profile {
+    background-color: #198754;
+    color: white;
+    font-weight: bold;
+    border-radius: 30px;
+    padding: 12px;
+    border: none;
+    transition: 0.3s ease;
+  }
+  .btn-save-profile:hover {
+    background-color: #157347;
+  }
+  
+  /* Profile Form Section */
+  .profile-form {
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  /* Minor text adjustments */
+  small.text-muted {
+    font-size: 0.9rem;
+  }
+  
+  .avatar-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from .models import Recipe, Rating, Profile, Ingredient
-from .forms import RecipeForm, RecipeIngredientFormSet
+from .forms import RecipeForm, RecipeIngredientFormSet, ProfileForm
 from django.db.models import Avg
 
 
@@ -235,4 +235,14 @@ def rate_recipe(request, recipe_id):
 @login_required
 def profile_view(request):
     profile = get_object_or_404(Profile, user=request.user)
-    return render(request, 'recipes/profile.html', {'profile': profile})
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('recipes:profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'recipes/profile.html', {'profile': profile, 'form': form})

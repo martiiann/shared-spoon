@@ -1,55 +1,96 @@
 {% extends 'recipes/base.html' %}
 
 {% block content %}
-  <div class="container my-5">
-    <h2 class="mb-4 text-center">My Profile</h2>
+<div class="container my-5">
+  <div class="card shadow-lg p-4" style="max-width: 750px; margin: 0 auto; background: rgba(255, 255, 255, 0.97); border-radius: 20px;">
+    
+     <!-- Title -->
+  <h2 class="text-center mb-4">My Profile</h2>
 
-    <!-- Success/Error Messages -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
+  <!-- Avatar Section -->
+  <div class="d-flex flex-column align-items-center justify-content-center mb-4">
+    {% if profile.avatar %}
+      <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle avatar-img">
+    {% else %}
+      <div class="rounded-circle d-flex align-items-center justify-content-center bg-secondary"
+           style="width: 120px; height: 120px; color: white; font-size: 50px;">
+        {{ user.username|first|upper }}
+      </div>
     {% endif %}
+    
+    <!-- Upload Button (centered) -->
+    <form method="POST" enctype="multipart/form-data" action="{% url 'recipes:profile' %}" class="d-flex flex-column align-items-center mt-3 w-100">
+      {% csrf_token %}
+      <label class="btn btn-success btn-sm mb-2" for="avatarUpload">Upload New Avatar</label>
+      <input id="avatarUpload" type="file" name="avatar" class="d-none">
 
-    <div class="card shadow p-4" style="max-width: 700px; margin: 0 auto; background-color: rgba(255,255,255,0.95);">
-      <div class="text-center mb-4">
-        <!-- Avatar with fallback -->
-        {% if profile.avatar %}
-          <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-        {% else %}
-          <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary" 
-               style="width: 100px; height: 100px; color: white; font-size: 40px;">
-            {{ user.username|first|upper }}
-          </div>
-        {% endif %}
-        <h4 class="mt-3">{{ user.username }}</h4>
+      <!-- Username -->
+      <h4 class="mt-2">{{ user.username }}</h4>
+
+      <!-- Member since -->
+      <small class="text-muted"><i class="bi bi-person-fill"></i> Member since {{ user.date_joined|date:"Y" }}</small>
+
+      <hr class="my-4" style="width: 100%;">
+
+      <!-- Profile Form -->
+      <div class="p-3 rounded" style="background: #f8f9fa; width: 100%;">
+        <div class="mb-3 text-center">
+          <i class="bi bi-pencil-square"></i> <strong>Bio</strong>
+        </div>
+        {{ form.bio }}
+
+        <div class="mt-4 mb-3 text-center">
+          <i class="bi bi-geo-alt-fill"></i> <strong>Location</strong>
+        </div>
+        {{ form.location }}
+
+        <div class="mt-4 mb-3 text-center">
+          <i class="bi bi-globe"></i> <strong>Website</strong>
+        </div>
+        {{ form.website }}
       </div>
 
-      <!-- Updated form action to use 'profile' as named in urls.py -->
-      <form method="POST" enctype="multipart/form-data" action="{% url 'recipes:profile' %}">
-        {% csrf_token %}
-        
-        {% for field in form %}
-          <div class="mb-3">
-            <label class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-              <div class="form-text">{{ field.help_text }}</div>
-            {% endif %}
-            {% if field.errors %}
-              <div class="text-danger small">{{ field.errors }}</div>
-            {% endif %}
-          </div>
-        {% endfor %}
-        
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-success mt-2">Update Profile</button>
-          <a href="{% url 'recipes:index' %}" class="btn btn-outline-secondary mt-2">Cancel</a>
-        </div>
-      </form>
+      <button type="submit" class="btn btn-success w-100 mt-4">Save Changes</button>
+    </form>
+
+      </div>
+
     </div>
   </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// Live Avatar Preview
+document.addEventListener('DOMContentLoaded', function () {
+  const avatarInput = document.getElementById('id_avatar');
+  const avatarPreview = document.getElementById('avatarPreview');
+
+  avatarInput.addEventListener('change', function (event) {
+    const [file] = event.target.files;
+    if (file) {
+      avatarPreview.src = URL.createObjectURL(file);
+      avatarPreview.classList.add('glow-avatar');
+    }
+  });
+
+  // SweetAlert success
+  {% if messages %}
+    {% for message in messages %}
+      {% if 'success' in message.tags %}
+        Swal.fire({
+          icon: 'success',
+          title: 'Profile Updated!',
+          text: '{{ message }}',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+});
+</script>
 {% endblock %}
