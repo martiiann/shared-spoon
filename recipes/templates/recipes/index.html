@@ -49,7 +49,12 @@
         {% else %}
           <img src="{% static 'recipes/img/default-avatar.png' %}" alt="Default avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
         {% endif %}
-        <small class="text-muted">Posted by <strong>{{ recipe.user.username }}</strong></small>
+        <small class="text-muted">
+            Posted by 
+            <a href="{% url 'recipes:public_profile' recipe.user.username %}">
+              <strong>{{ recipe.user.username }}</strong>
+            </a>
+          </small>
       </div>
 
       {% if recipe.image %}

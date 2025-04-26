@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Profile
     path('account/profile/', views.profile_view, name='profile'),
+    path('user/<str:username>/', views.public_profile, name='public_profile'),
     
     # AJAX endpoints
     path('api/ingredients/', views.manage_ingredients, name='ingredient_search'), 

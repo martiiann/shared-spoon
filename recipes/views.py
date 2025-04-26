@@ -246,3 +246,13 @@ def profile_view(request):
         form = ProfileForm(instance=profile)
 
     return render(request, 'recipes/profile.html', {'profile': profile, 'form': form})
+
+def public_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = user.profile
+    recipes = Recipe.objects.filter(user=user)
+    return render(request, 'recipes/public_profile.html', {
+        'user_profile': user,
+        'profile': profile,
+        'recipes': recipes
+    })

@@ -1,0 +1,66 @@
+{% extends 'recipes/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="card shadow-sm mx-auto p-4 text-center" style="max-width: 800px; background: rgba(255,255,255,0.95); border-radius: 1rem;">
+    
+    <!-- Avatar + Name -->
+    <div class="d-flex flex-column align-items-center">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" 
+             style="width: 120px; height: 120px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+      {% else %}
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary mb-3" 
+             style="width: 120px; height: 120px; color: white; font-size: 50px;">
+          {{ profile.user.username|first|upper }}
+        </div>
+      {% endif %}
+      <h3 class="fw-bold">{{ profile.user.username }}</h3>
+      <p class="text-muted"><i class="bi bi-calendar"></i> Member since {{ profile.user.date_joined|date:"Y" }}</p>
+    </div>
+
+    <hr>
+
+    <!-- About Section -->
+    <div class="p-3 rounded" style="background-color: #f8f9fa;">
+      {% if profile.bio %}
+        <p class="mb-2"><i class="bi bi-pencil-square"></i> <strong>Bio:</strong> {{ profile.bio }}</p>
+      {% endif %}
+      {% if profile.location %}
+        <p class="mb-2"><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ profile.location }}</p>
+      {% endif %}
+      {% if profile.website %}
+        <p><i class="bi bi-globe"></i> <strong>Website:</strong> 
+          <a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a>
+        </p>
+      {% endif %}
+    </div>
+
+    <hr>
+
+    <!-- Recipes List -->
+    <div class="mt-4">
+      <h4 class="text-center mb-4"><i class="bi bi-egg-fried"></i> Recipes by {{ profile.user.username }}</h4>
+
+      {% if recipes %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          {% for recipe in recipes %}
+          <div class="col">
+            <div class="card h-100 shadow-sm card-hover">
+              <div class="card-body text-center">
+                <h5 class="card-title">{{ recipe.title }}</h5>
+                <p class="card-text">{{ recipe.description|truncatechars:100 }}</p>
+                <a href="{% url 'recipes:recipe_detail' recipe.id %}" class="btn btn-success btn-sm">View Recipe →</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-center mt-4 text-muted">This user hasn't shared any recipes yet!</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
