@@ -2,282 +2,361 @@
 {% load static %}
 
 {% block content %}
-<!-- 🍽️ Hero Section -->
-<div class="p-5 mb-4 rounded-3" style="background-color: rgba(255,255,255,0.85); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-  <div class="container py-3">
-    <h1 class="display-5 fw-bold" style="color: #d76a03;">Welcome to Shared Spoon 🍴</h1>
-    <p class="col-md-8 fs-5" style="color: #333;">
-      Discover, save, and share your favorite recipes in one cozy place.
-    </p>
-    {% if user.is_authenticated and user_recipes_count == 0 %}
-      <a href="{% url 'recipes:add' %}" class="btn btn-warning btn-lg mt-2">Add Your First Recipe</a>
-    {% endif %}
-  </div>
-</div>
+<div class="container py-5">
 
-<h2 class="mt-5">Latest Recipes</h2>
+  <!-- 🍽️ Hero Section -->
+  <div class="p-5 mb-4 rounded-3"
+       style="background-color: rgba(255,255,255,0.85);
+              box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div class="container py-3">
+      <h1 class="display-5 fw-bold" style="color: #d76a03;">
+        Welcome to Shared Spoon 🍴
+      </h1>
+      <p class="col-md-8 fs-5" style="color: #333;">
+        Discover, save, and share your favorite recipes in one cozy place.
+      </p>
+      {% if user.is_authenticated and user_recipes_count == 0 %}
+        <a href="{% url 'recipes:add' %}"
+           class="btn btn-warning btn-lg mt-2">
+          Add Your First Recipe
+        </a>
+      {% endif %}
+    </div>
+  </div>
 
-<!-- 🔍 Filter Form -->
-<form method="get" class="row g-3 align-items-center mb-4">
-  <div class="col-sm-6">
-    <input type="text" name="q" class="form-control" placeholder="Search recipes..." value="{{ query|default:'' }}">
+  <!-- Latest Recipes Card -->
+  <div class="card header-card mb-4">
+    <div class="card-body">
+      <h2 class="card-title">Latest Recipes</h2>
+      <form method="get"
+            class="d-flex flex-wrap align-items-center gap-3 mt-3 index-search-form">
+        <input
+          type="text"
+          name="q"
+          class="form-control flex-fill"
+          placeholder="Search recipes..."
+          value="{{ query|default:'' }}"
+        >
+        <select name="category" class="form-select w-auto">
+          <option value="all"
+            {% if selected_category == 'all' or not selected_category %}selected{% endif %}>
+            All Categories
+          </option>
+          <option value="breakfast"
+            {% if selected_category == 'breakfast' %}selected{% endif %}>
+            Breakfast
+          </option>
+          <option value="lunch"
+            {% if selected_category == 'lunch' %}selected{% endif %}>
+            Lunch
+          </option>
+          <option value="dinner"
+            {% if selected_category == 'dinner' %}selected{% endif %}>
+            Dinner
+          </option>
+          <option value="dessert"
+            {% if selected_category == 'dessert' %}selected{% endif %}>
+            Dessert
+          </option>
+          <option value="vegan"
+            {% if selected_category == 'vegan' %}selected{% endif %}>
+            Vegan
+          </option>
+          <option value="snack"
+            {% if selected_category == 'snack' %}selected{% endif %}>
+            Snack
+          </option>
+        </select>
+        <button type="submit" class="btn btn-primary px-4">
+          Search
+        </button>
+      </form>
+    </div>
   </div>
-  <div class="col-sm-4">
-    <select name="category" class="form-select">
-      <option value="all" {% if selected_category == "all" or not selected_category %}selected{% endif %}>All Categories</option>
-      <option value="breakfast" {% if selected_category == "breakfast" %}selected{% endif %}>Breakfast</option>
-      <option value="lunch" {% if selected_category == "lunch" %}selected{% endif %}>Lunch</option>
-      <option value="dinner" {% if selected_category == "dinner" %}selected{% endif %}>Dinner</option>
-      <option value="dessert" {% if selected_category == "dessert" %}selected{% endif %}>Dessert</option>
-      <option value="vegan" {% if selected_category == "vegan" %}selected{% endif %}>Vegan</option>
-      <option value="snack" {% if selected_category == "snack" %}selected{% endif %}>Snack</option>
-    </select>
-  </div>
-  <div class="col-sm-2">
-    <button type="submit" class="btn btn-primary w-100">Search</button>
-  </div>
-</form>
 
-<!-- ⭐ Recipe Grid -->
-<div class="recipe-grid">
-  {% for recipe in page_obj %}
-    <div class="recipe-card">
-      <!-- 👤 Author Info -->
-      <div class="d-flex align-items-center mb-2">
-        {% if recipe.user.profile.avatar %}
-          <img src="{{ recipe.user.profile.avatar.url }}" alt="{{ recipe.user.username }}'s avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
-        {% else %}
-          <img src="{% static 'recipes/img/default-avatar.png' %}" alt="Default avatar" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover;">
-        {% endif %}
-        <small class="text-muted">
-            Posted by 
+  <!-- ⭐ Recipe Grid -->
+  <div class="recipe-grid">
+    {% for recipe in page_obj %}
+    <div class="recipe-card card-hover d-flex flex-column">
+      <div class="card-body d-flex flex-column">
+
+        <!-- 👤 Posted By (icon removed) -->
+        <div class="d-flex align-items-center mb-2">
+          {% if recipe.user.profile.avatar %}
+          <img src="{{ recipe.user.profile.avatar.url }}"
+               alt="{{ recipe.user.username }}'s avatar"
+               class="rounded-circle me-2"
+               width="32" height="32"
+               style="object-fit:cover;">
+          {% else %}
+          <img src="{% static 'recipes/img/default-avatar.png' %}"
+               alt="Default avatar"
+               class="rounded-circle me-2"
+               width="32" height="32"
+               style="object-fit:cover;">
+          {% endif %}
+          <small class="text-muted posted-by">
+            Posted by
             <a href="{% url 'recipes:public_profile' recipe.user.username %}">
               <strong>{{ recipe.user.username }}</strong>
             </a>
           </small>
-      </div>
+        </div>
 
-      {% if recipe.image %}
-        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="img-fluid rounded mb-2">
-      {% else %}
-        <img src="{% static 'recipes/img/default-recipe.jpg' %}" alt="Default recipe image" class="img-fluid rounded mb-2">
-      {% endif %}
+        <!-- 📷 Image -->
+        <div class="card-img-wrapper mb-3">
+          {% if recipe.image %}
+            <img src="{{ recipe.image.url }}"
+                 alt="{{ recipe.title }}"
+                 class="recipe-thumb rounded">
+          {% else %}
+            <img src="{% static 'recipes/img/default-recipe.jpg' %}"
+                 alt="Default recipe image"
+                 class="recipe-thumb rounded">
+          {% endif %}
+        </div>
 
-      <h3>{{ recipe.title }}</h3>
+        <!-- 🏷️ Title & Category -->
+        <h3 class="mb-2">
+          <a href="{% url 'recipes:recipe_detail' recipe.id %}">{{ recipe.title }}</a>
+        </h3>
+        <p class="card-subtitle text-muted mb-3">
+          <strong>🍽️ Category:</strong>
+          {% if recipe.category == 'breakfast' %}🥞 Breakfast
+          {% elif recipe.category == 'lunch'   %}🥪 Lunch
+          {% elif recipe.category == 'dinner'  %}🍝 Dinner
+          {% elif recipe.category == 'dessert' %}🍰 Dessert
+          {% elif recipe.category == 'vegan'   %}🥗 Vegan
+          {% elif recipe.category == 'snack'   %}🍪 Snack
+          {% else %}{{ recipe.category|capfirst }}{% endif %}
+        </p>
 
-      <p><strong>🍽️ Category:</strong>
-        {% if recipe.category == "breakfast" %} 🥞 Breakfast
-        {% elif recipe.category == "lunch" %} 🥪 Lunch
-        {% elif recipe.category == "dinner" %} 🍝 Dinner
-        {% elif recipe.category == "dessert" %} 🍰 Dessert
-        {% elif recipe.category == "vegan" %} 🥗 Vegan
-        {% elif recipe.category == "snack" %} 🍪 Snack
-        {% else %} {{ recipe.category|capfirst }}
-        {% endif %}
-      </p>
+        <!-- 📖 Description Preview -->
+        <p class="truncate mb-4">
+          {{ recipe.description|truncatechars:200 }}
+          <a href="{% url 'recipes:recipe_detail' recipe.id %}">Read More →</a>
+        </p>
 
-      <p>{{ recipe.description|truncatechars:200 }} 
-        <a href="{% url 'recipes:recipe_detail' recipe.id %}">Read More →</a>
-      </p>
-
+        <!-- ❤️ Saved + Unsave Footer -->
+<div class="mt-auto">
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="saved-count">
+        ❤️ {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}
+      </span>
       {% if user.is_authenticated %}
-      <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}" style="display: inline;">
+      <form
+        method="POST"
+        action="{% url 'recipes:toggle_favorite' recipe.id %}"
+        class="toggle-favorite-form"
+      >
         {% csrf_token %}
-        <button type="submit" class="btn btn-sm {% if user in recipe.liked_by.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
-          ❤️ {% if user in recipe.liked_by.all %} Unsave {% else %} Save {% endif %}
+        <button
+          type="submit"
+          class="btn btn-sm {% if recipe.is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %}"
+        >
+          <i class="bi bi-heart{% if recipe.is_favorite %}-fill text-white{% endif %} me-1"></i>
+          {% if recipe.is_favorite %}Unsave{% else %}Save{% endif %}
         </button>
       </form>
       {% else %}
-        <small><a href="{% url 'login' %}">Login to save ❤️</a></small>
+      <small><a href="{% url 'login' %}">Log in to save ❤️</a></small>
       {% endif %}
-
-      <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
-
-      <!-- ⭐ Average Rating -->
-      <p><strong>Average Rating:</strong>
-        {% if recipe.avg_rating %}
-          <span id="rating-display-{{ recipe.id }}">{{ recipe.avg_rating|floatformat:1 }} ⭐</span>
-        {% else %}
-          No ratings yet.
-        {% endif %}
-      </p>
-
-      <!-- ⭐ User Rating Form (AJAX) -->
-      {% if user.is_authenticated %}
-<div class="rating-container" data-recipe-id="{{ recipe.id }}">
-  <form class="rating-form">
-    {% csrf_token %}
-    <div class="d-flex align-items-center gap-2">
-
-      {% if recipe.user_rating %}
-        <div class="d-flex align-items-center gap-2">
-          <strong class="mb-0">Your rating: {{ recipe.user_rating.value }} ⭐</strong>
-          <button type="button" class="btn btn-sm btn-outline-primary submit-rating-btn">
-            ✏️ Edit your rating
-          </button>
-        </div>
-        <!-- Hidden select to update rating -->
-        <div class="edit-rating-select mt-2" style="display: none;">
-          <select name="rating" id="rating-{{ recipe.id }}" class="form-select w-auto">
-            <option value="">Select rating</option>
-            {% for i in "54321" %}
-              <option value="{{ i }}" {% if recipe.user_rating and recipe.user_rating.value == i|add:"0" %}selected{% endif %}>{{ i }} ⭐</option>
-            {% endfor %}
-          </select>
-          <button type="button" class="btn btn-sm btn-success submit-rating-btn">
-            Save
-          </button>
-        </div>
-      {% else %}
-        <select name="rating" id="rating-{{ recipe.id }}" class="form-select w-auto">
-          <option value="">Select rating</option>
-          {% for i in "54321" %}
-            <option value="{{ i }}" {% if recipe.user_rating and recipe.user_rating.value == i|add:"0" %}selected{% endif %}>{{ i }} ⭐</option>
-          {% endfor %}
-        </select>
-        <button type="button" class="btn btn-sm btn-success submit-rating-btn">
-          Rate
-        </button>
-      {% endif %}
-
     </div>
-    <div class="rating-feedback mt-1"></div>
-  </form>
-</div>
-{% else %}
-<p><em><a href="{% url 'login' %}">Log in</a> to rate this recipe.</em></p>
-{% endif %}
+  </div>
+  
+
+      </div>
     </div>
-  {% empty %}
-    <p class="alert alert-info text-center">No recipes yet! Be the first to add a recipe!</p>
-  {% endfor %}
-</div>
-
-<!-- 📄 Pagination -->
-{% if page_obj.has_other_pages %}
-<nav aria-label="Page navigation" class="mt-4">
-  <ul class="pagination justify-content-center flex-wrap">
-    {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">&laquo; First</a>
-      </li>
-    {% endif %}
-
-    {% for num in page_obj.paginator.page_range %}
-      {% if page_obj.number == num %}
-        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-        </li>
-      {% endif %}
+    {% empty %}
+    <p class="alert alert-info text-center">
+      No recipes yet! Be the first to add a recipe!
+    </p>
     {% endfor %}
+  </div>
 
-    {% if page_obj.has_next %}
+  <!-- 📄 Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap">
+      {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last &raquo;</a>
+        <a class="page-link"
+           href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+          &laquo; First
+        </a>
       </li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link"
+             href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+            {{ num }}
+          </a>
+        </li>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+          Last &raquo;
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('JavaScript loaded');
-    });
     
-    document.addEventListener('click', async function(event) {
-        if (event.target && event.target.classList.contains('submit-rating-btn')) {
-            const button = event.target;
-            const container = button.closest('.rating-container');
-            const form = button.closest('form');
-            const recipeId = container.dataset.recipeId;
-            const editSection = container.querySelector('.edit-rating-select');
+      // ——— Rating handler ———
+      document.addEventListener('click', async function(event) {
+        if (!event.target.classList.contains('submit-rating-btn')) return;
     
-            // 🔥 If button says "Edit your rating"
-            if (button.innerText.includes('Edit')) {
-                if (editSection) {
-                    editSection.style.display = 'flex'; // Show the hidden select box
-                }
-                button.style.display = 'none'; // Hide "Edit your rating" button
-                return; // Stop here — do not submit yet
-            }
+        const button      = event.target;
+        const container   = button.closest('.rating-container');
+        const recipeId    = container.dataset.recipeId;
+        const form        = button.closest('form');
+        const feedbackDiv = container.querySelector('.rating-feedback');
+        const csrfToken   = form.querySelector('[name=csrfmiddlewaretoken]').value;
     
-            // 🔥 Otherwise, submitting the new rating
-            const ratingSelect = form.querySelector('select[name="rating"]');
-            const rating = ratingSelect.value;
-            const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
-            const feedbackDiv = container.querySelector('.rating-feedback');
-    
-            if (!rating) {
-                feedbackDiv.innerHTML = '<div class="alert alert-warning p-2">Please select a rating first!</div>';
-                return;
-            }
-    
-            button.disabled = true;
-            const originalText = button.innerHTML;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-    
-            try {
-                const response = await fetch(`/rate-recipe/${recipeId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: `rating=${rating}`
-                });
-    
-                const data = await response.json();
-    
-                if (!response.ok || !data.success) {
-                    throw new Error(data.error || 'Failed to submit rating');
-                }
-    
-                Swal.fire({
-                    position: 'center',
-                    icon: 'success',
-                    title: 'Thank you! 🎉',
-                    text: 'Your updated rating has been submitted.',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    width: '300px',
-                    padding: '1em',
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-    
-                // After successful update, hide select again
-                if (editSection) {
-                    editSection.style.display = 'none';
-                }
-    
-                // Show back the Edit button
-                const editButton = container.querySelector('.submit-rating-btn');
-                if (editButton) {
-                    editButton.style.display = 'inline-block';
-                    editButton.textContent = 'Edit your rating';
-                }
-    
-                // Update rating text
-                const ratingDisplay = document.getElementById(`rating-display-${recipeId}`);
-                if (ratingDisplay && typeof data.avg_rating === 'number') {
-                    ratingDisplay.textContent = `${data.avg_rating.toFixed(1)} ⭐`;
-                }
-    
-            } catch (error) {
-                console.error('Rating error:', error);
-                feedbackDiv.innerHTML = `<div class="alert alert-danger p-2">Error: ${error.message}</div>`;
-            } finally {
-                button.disabled = false;
-                button.innerHTML = originalText;
-            }
+        // Toggle "Edit your rating"
+        if (button.innerText.includes('Edit')) {
+          container.querySelector('.edit-rating-select').style.display = 'flex';
+          button.style.display = 'none';
+          return;
         }
+    
+        // Submit new rating
+        const rating = form.querySelector('select[name="rating"]').value;
+        if (!rating) {
+          feedbackDiv.innerHTML = '<div class="alert alert-warning p-2">Please select a rating first!</div>';
+          return;
+        }
+    
+        button.disabled = true;
+        const oldHtml = button.innerHTML;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+        try {
+          const resp = await fetch(`/rate-recipe/${recipeId}/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `rating=${rating}`
+          });
+          const data = await resp.json();
+          if (!resp.ok || !data.success) throw new Error(data.error || 'Submission failed');
+    
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `You rated this ${rating} ⭐`,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+          });
+    
+          // Reset edit UI
+          const editSection = container.querySelector('.edit-rating-select');
+          if (editSection) editSection.style.display = 'none';
+          const editBtn = container.querySelector('.submit-rating-btn');
+          if (editBtn) {
+            editBtn.style.display = 'inline-block';
+            editBtn.textContent = 'Edit your rating';
+          }
+    
+          // Update displayed average
+          const disp = document.getElementById(`rating-display-${recipeId}`);
+          if (disp && typeof data.avg_rating === 'number') {
+            disp.textContent = `${data.avg_rating.toFixed(1)} ⭐`;
+          }
+        } catch (err) {
+          feedbackDiv.innerHTML = `<div class="alert alert-danger p-2">Error: ${err.message}</div>`;
+        } finally {
+          button.disabled = false;
+          button.innerHTML = oldHtml;
+        }
+      });
+    
+      // ——— Favorite toggle + centered modal ———
+      document.addEventListener('submit', async function(e) {
+        if (!e.target.classList.contains('toggle-favorite-form')) return;
+        e.preventDefault();
+    
+        const form = e.target;
+        const btn  = form.querySelector('button[type="submit"]');
+        const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+        try {
+          const resp = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrf
+            }
+          });
+          const data = await resp.json();
+          if (!data.success) throw new Error('Toggle failed');
+    
+          // Swap button appearance & text
+          if (data.favorited) {
+            btn.classList.replace('btn-outline-danger','btn-danger');
+            btn.innerHTML = '<i class="bi bi-heart-fill text-white me-1"></i>Unsave';
+          } else {
+            btn.classList.replace('btn-danger','btn-outline-danger');
+            btn.innerHTML = '<i class="bi bi-heart me-1"></i>Save';
+          }
+    
+          // Update saved-count
+          const card    = form.closest('.recipe-card');
+          const counter = card.querySelector('.saved-count');
+          if (counter) {
+            const n = data.liked_by_count;
+            counter.textContent = `❤️ ${n} user${n === 1 ? '' : 's'}`;
+          }
+    
+          // Centered modal with longer message
+          Swal.fire({
+            position: 'center',
+            icon: data.favorited ? 'success' : 'info',
+            title: data.favorited
+              ? 'Recipe Added to Favorites!'
+              : 'Recipe Removed from Favorites!',
+            text: data.favorited
+              ? 'Great choice! This recipe is now safely stored in your favorites list for easy access anytime.'
+              : 'No worries! This recipe has been taken off your favorites list—you can always save it again later.',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            timer: 3000,
+            timerProgressBar: true
+          });
+    
+        } catch (err) {
+          console.error(err);
+          Swal.fire({
+            position: 'center',
+            icon: 'error',
+            title: 'Oops!',
+            text: 'Could not update favorite. Please try again.',
+            showConfirmButton: true
+          });
+        }
+      });
+    
     });
     </script>
-    {% endblock %}
+{% endblock %}

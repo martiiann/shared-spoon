@@ -1,3 +1,7 @@
+/* ================================
+   FULL CSS (copy & paste)
+   ================================ */
+
 /* Base Styles */
 body {
     font-family: 'Quicksand', sans-serif;
@@ -152,10 +156,108 @@ footer {
     margin: 0 2px;
 }
 
-/* Dark Mode */
+/* Profile Card Styles */
+.card-profile {
+    background: linear-gradient(to top right, #ffffff, #f9f9f9);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+#avatarPreview {
+    transition: all 0.3s ease;
+}
+#avatarPreview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Upload Avatar Button */
+.btn-upload-avatar {
+    background-color: #198754;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 24px;
+    border-radius: 30px;
+    display: inline-block;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.btn-upload-avatar:hover {
+    background-color: #157347;
+}
+
+/* Save Profile Button */
+.btn-save-profile {
+    background-color: #198754;
+    color: white;
+    font-weight: bold;
+    border-radius: 30px;
+    padding: 12px;
+    border: none;
+    transition: 0.3s ease;
+}
+.btn-save-profile:hover {
+    background-color: #157347;
+}
+
+/* Profile Form Section */
+.profile-form {
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Minor text adjustments */
+small.text-muted {
+    font-size: 0.9rem;
+}
+
+/* Avatar Image */
+.avatar-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Recipe Card Hover Effect */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ensures the image truly centers and keeps object-fit */
+.recipe-image {
+    display: block;
+    margin: 0 auto;
+    max-height: 450px;
+    object-fit: cover;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .recipe-grid {
+        gap: 1.2rem;
+    }
+    .navbar-brand img {
+        height: 50px;
+    }
+    .dark-mode-toggle {
+        margin-left: 10px;
+    }
+}
+
+/* ================================
+   DARK MODE TWEAKS
+   ================================ */
+
 body.dark-mode {
-    background: rgba(0, 0, 0, 0.4) url('/static/recipes/img/bg.png') no-repeat center center fixed;
-    background-blend-mode: darken;
+    background: rgba(20,20,20,0.8) url('/static/recipes/img/bg.png') no-repeat center center fixed;
+    background-blend-mode: multiply;
     background-size: cover;
     color: #e0e0e0;
 }
@@ -174,18 +276,23 @@ body.dark-mode .navbar-nav .nav-link:hover {
 }
 
 body.dark-mode .recipe-card {
-    background-color: #1f1f1f;
+    background-color: #1f1f1f !important;
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
 }
 
-body.dark-mode footer {
-    color: #aaa;
+body.dark-mode .recipe-card h3,
+body.dark-mode .recipe-card h3 a {
+    color: #ffd580 !important;
+}
+
+body.dark-mode .recipe-card p {
+    color: #dcdcdc !important;
 }
 
 body.dark-mode .btn-primary {
     background-color: #ff8800;
 }
-
 body.dark-mode .btn-primary:hover {
     background-color: #ff7700;
 }
@@ -193,7 +300,6 @@ body.dark-mode .btn-primary:hover {
 body.dark-mode .btn-success {
     background-color: #34d058;
 }
-
 body.dark-mode .btn-success:hover {
     background-color: #28c150;
 }
@@ -201,100 +307,235 @@ body.dark-mode .btn-success:hover {
 body.dark-mode .btn-warning {
     background-color: #ffd300;
 }
-
 body.dark-mode .btn-warning:hover {
     background-color: #e6be00;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .recipe-grid {
-        gap: 1.2rem;
-    }
-
-    .navbar-brand img {
-        height: 50px;
-    }
-
-    .dark-mode-toggle {
-        margin-left: 10px;
-    }
+body.dark-mode .btn-danger {
+    background-color: #d9534f;
+    border-color: #d73925;
+}
+body.dark-mode .btn-danger:hover {
+    background-color: #c9302c;
 }
 
-/* Profile Card Styles */
-.card-profile {
-    background: linear-gradient(to top right, #ffffff, #f9f9f9);
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  }
-  
-  /* Avatar nice hover */
-  #avatarPreview {
-    transition: all 0.3s ease;
-  }
-  #avatarPreview:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  }
-  
-/* Upload Avatar Button */
-.btn-upload-avatar {
-    background-color: #198754;
+/* Pagination in dark mode */
+body.dark-mode .pagination .page-link {
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    border: 1px solid #555;
+}
+body.dark-mode .pagination .page-item.active .page-link {
+    background-color: #5a5a5a;
+    border-color: #777;
     color: #fff;
-    font-weight: 600;
-    padding: 8px 24px;
-    border-radius: 30px;
-    display: inline-block;
-    margin-top: 8px;
-    cursor: pointer;
-    transition: 0.3s ease;
-  }
-  .btn-upload-avatar:hover {
-    background-color: #157347;
-  }
-  
-  /* Save Profile Button */
-  .btn-save-profile {
-    background-color: #198754;
-    color: white;
-    font-weight: bold;
-    border-radius: 30px;
-    padding: 12px;
-    border: none;
-    transition: 0.3s ease;
-  }
-  .btn-save-profile:hover {
-    background-color: #157347;
-  }
-  
-  /* Profile Form Section */
-  .profile-form {
-    background: #f9f9f9;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  
-  /* Minor text adjustments */
-  small.text-muted {
-    font-size: 0.9rem;
-  }
-  
-  .avatar-img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
+}
 
+/* ================================
+   FAVORITES PAGE DESIGN
+   ================================ */
 
-  /* Recipe Card Hover Effect */
-.card-hover {
+/* Header Card */
+.favorites-header-card {
+    background-color: rgba(255,255,255,0.95);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+body.dark-mode .favorites-header-card {
+    background-color: rgba(40,40,40,0.9);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+}
+
+/* Responsive Grid */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Recipe Card enhancements in favorites */
+.favorites-grid .recipe-card {  
+    background-color: rgba(255,255,255,0.9);
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.favorites-grid .recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* Image wrapper */
+.favorites-grid .card-img-wrapper {
+    width: 100%;
+    overflow: hidden;
+}
+.favorites-grid .recipe-thumb {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* Body */
+.favorites-grid .card-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.favorites-grid .card-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+}
+.favorites-grid .card-subtitle {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+.favorites-grid p.text-truncate {
+    flex: none;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+
+/* Unsave button at bottom */
+.favorites-grid form {
+    margin-top: auto;
+}
+
+/* ===================================
+   HOME PAGE: Header Card + Search Bar
+   =================================== */
+   .header-card {
+    background-color: rgba(255,255,255,0.95);
+    border-radius: .75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  body.dark-mode .header-card {
+    background-color: rgba(40,40,40,0.9);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+  }
+  .header-card .card-title {
+    margin-bottom: .75rem;
+  }
+  .index-search-form {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+  .index-search-form .form-control,
+  .index-search-form .form-select {
+    flex: 1 1 200px;
+    min-width: 140px;
+  }
+  .index-search-form .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
   
-  .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  /* =========================
+     HOME PAGE: Recipe Grid
+     ========================= */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
   }
   
+  /* ======================================
+     HOME PAGE: Individual Recipe Card
+     ====================================== */
+  .recipe-card {
+    background-color: rgba(255,255,255,0.9);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  }
+  .recipe-card .card-body {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  /* Posted-by line */
+  .posted-by {
+    font-size: .875rem;
+    color: #666;
+  }
+  body.dark-mode .posted-by {
+    color: #e0e0e0 !important;
+  }
+  
+  /* Image wrapper for fixed aspect */
+  .card-img-wrapper {
+    width: 100%;
+    overflow: hidden;
+    border-radius: .5rem;
+    margin-bottom: 1rem;
+  }
+  .recipe-thumb {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  /* Truncate description preview */
+  .truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  
+  /* Footer (saved count + unsave) sticks to bottom */
+  .recipe-card .mt-auto {
+    margin-top: auto;
+  }
+  
+  /* Dark mode tweaks */
+  body.dark-mode .recipe-card {
+    background-color: #1f1f1f !important;
+    color: #e0e0e0;
+  }
+  body.dark-mode .recipe-card h3 a {
+    color: #ffd580 !important;
+  }
+  body.dark-mode .recipe-card p {
+    color: #dcdcdc !important;
+  }
+  body.dark-mode .btn-danger {
+    background-color: #d9534f;
+    border-color: #d73925;
+  }
+  body.dark-mode .btn-danger:hover {
+    background-color: #c9302c;
+  }
+  
+  /* Lift the search button up by 2px */
+.index-search-form button.btn {
+    margin-top: -2px;
+  }
+  /* Make Latest Recipes title white in dark mode */
+body.dark-mode .header-card .card-title {
+    color: #ffffff !important;
+  }

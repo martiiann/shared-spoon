@@ -16,26 +16,37 @@ def index(request):
     selected_category = request.GET.get('category', 'all')
 
     recipes = Recipe.objects.all()
-
     if query:
         recipes = recipes.filter(title__icontains=query)
-
-    if selected_category and selected_category != 'all':
+    if selected_category != 'all':
         recipes = recipes.filter(category=selected_category)
 
-    paginator = Paginator(recipes, 6)  # 6 recipes per page
+    paginator = Paginator(recipes, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Count of recipes the user created
     user_recipes_count = 0
     if request.user.is_authenticated:
         user_recipes_count = Recipe.objects.filter(user=request.user).count()
 
-    
-        user_ratings = Rating.objects.filter(user=request.user, recipe__in=page_obj).select_related('recipe')
+        # Attach user_ratings
+        user_ratings = Rating.objects.filter(
+            user=request.user,
+            recipe__in=page_obj
+        ).select_related('recipe')
         rating_dict = {r.recipe.id: r for r in user_ratings}
         for recipe in page_obj:
             recipe.user_rating = rating_dict.get(recipe.id)
+
+        # **NEW**: Attach is_favorite flag
+        fav_ids = set(
+            Recipe.objects
+                  .filter(liked_by=request.user)
+                  .values_list('id', flat=True)
+        )
+        for recipe in page_obj:
+            recipe.is_favorite = (recipe.id in fav_ids)
 
     context = {
         'page_obj': page_obj,
@@ -62,24 +73,29 @@ def register(request):
 def add_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
-        formset = RecipeIngredientFormSet(request.POST)
-        if form.is_valid() and formset.is_valid():
+        if form.is_valid():
+            # 1️⃣ Save the recipe so we have a PK to attach ingredients to
             recipe = form.save(commit=False)
             recipe.user = request.user
             recipe.save()
-            formset.instance = recipe
-            formset.save()
-            messages.success(request, 'Recipe added successfully!')
-            return redirect('recipes:my')
+
+            # 2️⃣ Now bind the POST data to a formset *on* that recipe
+            formset = RecipeIngredientFormSet(request.POST, request.FILES, instance=recipe)
+            if formset.is_valid():
+                formset.save()
+                messages.success(request, 'Recipe added successfully!')
+                return redirect('recipes:recipe_detail', pk=recipe.pk)
+        else:
+            # If the main form is invalid, still bind the formset so its errors show
+            formset = RecipeIngredientFormSet(request.POST, request.FILES)
     else:
         form = RecipeForm()
-        formset = RecipeIngredientFormSet()
+        formset = RecipeIngredientFormSet()  # unbound on GET
 
     return render(request, 'recipes/add_recipe.html', {
         'form': form,
         'formset': formset,
     })
-
 # Ingredient Search (AJAX API) — THIS IS CORRECT NOW
 def manage_ingredients(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -96,13 +112,20 @@ def edit_recipe(request, pk):
 
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
-        if form.is_valid():
+        formset = RecipeIngredientFormSet(request.POST, instance=recipe)
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             messages.success(request, 'Recipe updated successfully!')
             return redirect('recipes:my')
     else:
         form = RecipeForm(instance=recipe)
-    return render(request, 'recipes/edit_recipe.html', {'form': form})
+        formset = RecipeIngredientFormSet(instance=recipe)
+
+    return render(request, 'recipes/edit_recipe.html', {
+        'form': form,
+        'formset': formset,
+    })
 
 # Delete Recipe
 @login_required
@@ -179,12 +202,21 @@ def toggle_favorite(request, recipe_id):
 
     if recipe.liked_by.filter(id=request.user.id).exists():
         recipe.liked_by.remove(request.user)
-        messages.info(request, 'Removed from favorites.')
+        favorited = False
+        msg = 'Removed from favorites.'
     else:
         recipe.liked_by.add(request.user)
-        messages.success(request, 'Recipe saved to favorites!')
+        favorited = True
+        msg = 'Recipe saved to favorites!'
 
-    # Instead of redirecting to favorites, redirect back to the same page
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'favorited': favorited,
+            'liked_by_count': recipe.liked_by.count(),
+            'message': msg
+        })
+
     return redirect(request.META.get('HTTP_REFERER', 'recipes:index'))
 
 # My Favorites
@@ -209,10 +241,15 @@ def recipe_detail(request, pk):
     if request.user.is_authenticated:
         is_favorite = recipe.liked_by.filter(id=request.user.id).exists()
 
+    avg_rating = recipe.ratings.aggregate(avg=Avg('value'))['avg'] or 0
+    rating_count = recipe.ratings.count()
+
     context = {
         'recipe': recipe,
         'user_rating': user_rating,
         'is_favorite': is_favorite,
+        'avg_rating': round(avg_rating, 1),
+        'rating_count': rating_count,
     }
     return render(request, 'recipes/recipe_detail.html', context)
 

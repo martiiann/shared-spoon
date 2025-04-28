@@ -1,80 +1,90 @@
 {% extends "recipes/base.html" %}
 
 {% block content %}
-  <div class="container py-5">
-    <h2 class="mb-4 text-center">My Saved Recipes ❤️</h2>
+<div class="container py-5">
 
-    {% if page_obj and page_obj.object_list %}
-      <div class="recipe-grid">
-        {% for recipe in page_obj %}
-          <div class="recipe-card">
-            {% if recipe.image %}
-              <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" style="width: 100%; height: 200px; object-fit: cover;" class="rounded mb-2">
-            {% endif %}
-
-            <h3><a href="{% url 'recipes:recipe_detail' recipe.id %}">{{ recipe.title }}</a></h3>
-
-            <p><strong>Category:</strong> 
-              {% if recipe.category == "breakfast" %} 🥞 Breakfast
-              {% elif recipe.category == "lunch" %} 🥪 Lunch
-              {% elif recipe.category == "dinner" %} 🍝 Dinner
-              {% elif recipe.category == "dessert" %} 🍰 Dessert
-              {% elif recipe.category == "vegan" %} 🥗 Vegan
-              {% elif recipe.category == "snack" %} 🍪 Snack
-              {% else %} {{ recipe.category|capfirst }}
-              {% endif %}
-            </p>
-
-            <p><strong>Posted by:</strong> {{ recipe.user.username }}</p>
-
-            {% if recipe.user.profile.avatar %}
-              <img src="{{ recipe.user.profile.avatar.url }}" alt="{{ recipe.user.username }}'s avatar"
-                   style="width: 40px; height: 40px; border-radius: 50%;">
-            {% endif %}
-
-            <p>{{ recipe.description|truncatechars:200 }}</p>
-
-            <p>❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}</p>
-
-            <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}" style="display: inline;">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-danger mt-2">
-                💔 Unsave
-              </button>
-            </form>
-          </div>
-        {% endfor %}
-      </div>
-
-      <!-- Pagination -->
-      {% if page_obj.has_other_pages %}
-      <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center flex-wrap">
-          {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-          </li>
-          {% endif %}
-
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-            {% endif %}
-          {% endfor %}
-
-          {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-          </li>
-          {% endif %}
-        </ul>
-      </nav>
-      {% endif %}
-
-    {% else %}
-      <p class="alert alert-info text-center mt-5">You haven't saved any recipes yet! ❤️</p>
-    {% endif %}
+  <!-- Header Card -->
+  <div class="favorites-header-card">
+    <h2 class="mb-0 text-center">My Saved Recipes ❤️</h2>
   </div>
+
+  {% if page_obj and page_obj.object_list %}
+    <!-- Responsive Grid -->
+    <div class="favorites-grid">
+      {% for recipe in page_obj %}
+      <div class="recipe-card card-hover">
+        {% if recipe.image %}
+        <div class="card-img-wrapper">
+          <img
+            src="{{ recipe.image.url }}"
+            alt="{{ recipe.title }}"
+            class="recipe-thumb"
+          >
+        </div>
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h3 class="card-title">
+            <a href="{% url 'recipes:recipe_detail' recipe.id %}">
+              {{ recipe.title }}
+            </a>
+          </h3>
+          <p class="card-subtitle mb-2">
+            <strong>Category:</strong>
+            {% if recipe.category == "breakfast" %} 🥞 Breakfast
+            {% elif recipe.category == "lunch" %} 🥪 Lunch
+            {% elif recipe.category == "dinner" %} 🍝 Dinner
+            {% elif recipe.category == "dessert" %} 🍰 Dessert
+            {% elif recipe.category == "vegan" %} 🥗 Vegan
+            {% elif recipe.category == "snack" %} 🍪 Snack
+            {% else %} {{ recipe.category|capfirst }}
+            {% endif %}
+          </p>
+          <p class="text-truncate mb-3">
+            {{ recipe.description }}
+          </p>
+          <p class="mt-auto mb-2">
+            ❤️ Saved by {{ recipe.liked_by.count }} user{{ recipe.liked_by.count|pluralize }}
+          </p>
+          <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm w-100">
+              💔 Unsave
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center flex-wrap">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+  {% else %}
+    <p class="alert alert-info text-center mt-5">
+      You haven't saved any recipes yet! ❤️
+    </p>
+  {% endif %}
+</div>
 {% endblock %}
