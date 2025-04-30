@@ -539,3 +539,63 @@ body.dark-mode .favorites-header-card {
 body.dark-mode .header-card .card-title {
     color: #ffffff !important;
   }
+
+  
+  /* Dark-mode: make detail hero readable */
+body.dark-mode .p-5.mb-4.rounded-3 {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+  
+  body.dark-mode .p-5.mb-4.rounded-3 h1,
+  body.dark-mode .p-5.mb-4.rounded-3 p {
+    color: #ffffff !important;
+  }
+  
+  /* Dark-mode: Ingredients & Instructions readability */
+@media (prefers-color-scheme: dark) {
+    /* Card headers */
+    body.dark-mode .card-header {
+      background-color: #2a2a2a !important;
+      color: #f0f0f0 !important;
+    }
+  
+    /* Card bodies */
+    body.dark-mode .card-body,
+    body.dark-mode .list-group-item {
+      background-color: #1f1f1f !important;
+      color: #e0e0e0 !important;
+    }
+  
+    /* Make links in those sections stand out */
+    body.dark-mode .card-body a,
+    body.dark-mode .list-group-item a {
+      color: #ffa500 !important;
+    }
+  }
+  
+  /* Mobile & tablet: avatar flush-left; dark-mode flush-right */
+@media (max-width: 991.98px) {
+    /* 1) Undo ms-auto centering on the UL */
+    .navbar-nav.ms-auto {
+      margin-left: 0 !important;
+    }
+  
+    /* 2) Collapse hides/shows normally */
+    .navbar-collapse.collapse {
+      display: none !important;
+    }
+    .navbar-collapse.collapse.show {
+      display: flex !important;
+      width: 100% !important;
+      padding: 0.5rem 1rem !important;
+    }
+  
+    /* 3) Flex the <ul> items across full width */
+    .navbar-collapse.collapse.show .navbar-nav {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+  }
+  
