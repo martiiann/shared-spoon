@@ -1,14 +1,78 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.shortcuts           import render, redirect, get_object_or_404
+from django.contrib             import messages
+from django.contrib.auth        import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django.core.paginator import Paginator
-from django.http import JsonResponse
-from .models import Recipe, Rating, Profile, Ingredient
-from .forms import RecipeForm, RecipeIngredientFormSet, ProfileForm
-from django.db.models import Avg
+from accounts.forms              import CustomUserCreationForm
+from django.contrib.auth         import login
+from django.core.paginator      import Paginator
+from django.http                import JsonResponse
+from django.db.models           import Avg
+from django.forms               import inlineformset_factory
 
+from django.views.generic       import ListView, CreateView, UpdateView, DeleteView
+from django.urls                import reverse_lazy
+from django.utils.decorators    import method_decorator
+
+from .models    import Recipe, Rating, Profile, Ingredient, RecipeIngredient
+from .forms     import RecipeForm, RecipeIngredientFormSet, ProfileForm
+from accounts.decorators import admin_required
+
+
+
+User = get_user_model()
+
+@login_required
+@admin_required
+def admin_dashboard(request):
+    context = {
+        'user_count':       User.objects.count(),
+        'recipe_count':     Recipe.objects.count(),
+        'ingredient_count': Ingredient.objects.count(),
+    }
+    return render(request, 'admin/dashboard.html', context)
+
+@method_decorator([login_required, admin_required], name='dispatch')
+class RecipeListView(ListView):
+    model = Recipe
+    template_name = 'admin/recipe_list.html'
+    context_object_name = 'recipes'
+    paginate_by = 20
+
+@method_decorator([login_required, admin_required], name='dispatch')
+class RecipeCreateView(CreateView):
+    model = Recipe
+    fields = ['user','title','description','instructions','category','image']
+    template_name = 'admin/recipe_form.html'
+    success_url = reverse_lazy('recipes:admin_recipe_list')
+
+@method_decorator([login_required, admin_required], name='dispatch')
+class RecipeUpdateView(UpdateView):
+    model = Recipe
+    fields = ['user','title','description','instructions','category','image']
+    template_name = 'admin/recipe_form.html'
+    success_url = reverse_lazy('recipes:admin_recipe_list')
+
+@method_decorator([login_required, admin_required], name='dispatch')
+class RecipeDeleteView(DeleteView):
+    model = Recipe
+    template_name = 'admin/recipe_confirm_delete.html'
+    success_url = reverse_lazy('recipes:admin_recipe_list')
+
+    # app‐admin: User CRUD
+@method_decorator([login_required, admin_required], name='dispatch')
+class UserListView(ListView):
+    model = User
+    template_name = 'admin/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 20
+
+# app‐admin: Ingredient CRUD
+@method_decorator([login_required, admin_required], name='dispatch')
+class IngredientListView(ListView):
+    model = Ingredient
+    template_name = 'admin/ingredient_list.html'
+    context_object_name = 'ingredients'
+    paginate_by = 20
 
 # Homepage (Index)
 def index(request):
@@ -58,39 +122,51 @@ def index(request):
 
 # Register User
 def register(request):
+    if request.user.is_authenticated:
+        return redirect('recipes:home')
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Account created successfully! You can now log in.')
-            return redirect('login')
+            user = form.save()
+            Profile.objects.create(user=user)
+            login(request, user)
+            messages.success(request, 'Welcome! Your account has been created.')
+            return redirect('recipes:index')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
+
     return render(request, 'registration/register.html', {'form': form})
 
 # Add Recipe
 @login_required
 def add_recipe(request):
+    
     if request.method == 'POST':
+       
         form = RecipeForm(request.POST, request.FILES)
-        if form.is_valid():
-            # 1️⃣ Save the recipe so we have a PK to attach ingredients to
+        
+        formset = RecipeIngredientFormSet(request.POST, request.FILES)
+
+        
+        if form.is_valid() and formset.is_valid():
+            
             recipe = form.save(commit=False)
             recipe.user = request.user
             recipe.save()
 
-            # 2️⃣ Now bind the POST data to a formset *on* that recipe
-            formset = RecipeIngredientFormSet(request.POST, request.FILES, instance=recipe)
-            if formset.is_valid():
-                formset.save()
-                messages.success(request, 'Recipe added successfully!')
-                return redirect('recipes:recipe_detail', pk=recipe.pk)
-        else:
-            # If the main form is invalid, still bind the formset so its errors show
-            formset = RecipeIngredientFormSet(request.POST, request.FILES)
+            
+            formset.instance = recipe
+            formset.save()
+
+            messages.success(request, 'Recipe added successfully!')
+            return redirect('recipes:recipe_detail', pk=recipe.pk)
+
+        
+
     else:
         form = RecipeForm()
-        formset = RecipeIngredientFormSet()  # unbound on GET
+        formset = RecipeIngredientFormSet()
 
     return render(request, 'recipes/add_recipe.html', {
         'form': form,
@@ -112,12 +188,17 @@ def edit_recipe(request, pk):
 
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
-        formset = RecipeIngredientFormSet(request.POST, instance=recipe)
+        formset = RecipeIngredientFormSet(request.POST, request.FILES, instance=recipe)
+
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
             messages.success(request, 'Recipe updated successfully!')
-            return redirect('recipes:my')
+            # <- This line must be indented to the same level as form.save()
+            return redirect('recipes:recipe_detail', pk=recipe.pk)
+        else:
+            print("Form errors:", form.errors)
+            print("Formset errors:", formset.errors)
     else:
         form = RecipeForm(instance=recipe)
         formset = RecipeIngredientFormSet(instance=recipe)
@@ -126,7 +207,6 @@ def edit_recipe(request, pk):
         'form': form,
         'formset': formset,
     })
-
 # Delete Recipe
 @login_required
 def delete_recipe(request, pk):
@@ -231,27 +311,40 @@ def my_favorites(request):
 
 # Recipe Detail Page
 def recipe_detail(request, pk):
-    recipe = get_object_or_404(Recipe, pk=pk)
+    
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related('recipe_ingredients__ingredient'),
+        pk=pk
+    )
 
+    
+    ingredients = recipe.recipe_ingredients.select_related('ingredient').all()
+
+    
     user_rating = None
     if request.user.is_authenticated:
-        user_rating = Rating.objects.filter(user=request.user, recipe=recipe).first()
+        user_rating = Rating.objects.filter(
+            user=request.user,
+            recipe=recipe
+        ).first()
 
-    is_favorite = False
-    if request.user.is_authenticated:
-        is_favorite = recipe.liked_by.filter(id=request.user.id).exists()
+    is_favorite = (
+        request.user.is_authenticated
+        and recipe.liked_by.filter(id=request.user.id).exists()
+    )
 
     avg_rating = recipe.ratings.aggregate(avg=Avg('value'))['avg'] or 0
     rating_count = recipe.ratings.count()
 
-    context = {
+    
+    return render(request, 'recipes/recipe_detail.html', {
         'recipe': recipe,
+        'ingredients': ingredients,
         'user_rating': user_rating,
         'is_favorite': is_favorite,
         'avg_rating': round(avg_rating, 1),
         'rating_count': rating_count,
-    }
-    return render(request, 'recipes/recipe_detail.html', context)
+    })
 
 # Rate Recipe
 @login_required
@@ -271,7 +364,7 @@ def rate_recipe(request, recipe_id):
 # Profile View
 @login_required
 def profile_view(request):
-    profile = get_object_or_404(Profile, user=request.user)
+    profile, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
@@ -282,7 +375,11 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)
 
-    return render(request, 'recipes/profile.html', {'profile': profile, 'form': form})
+    return render(request, 'recipes/profile.html', {
+        'profile': profile,
+        'form': form,
+    })
+
 
 def public_profile(request, username):
     user = get_object_or_404(User, username=username)

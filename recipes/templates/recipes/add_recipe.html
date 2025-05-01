@@ -56,6 +56,9 @@
                   </div>
 
                   <div class="col-md-1 d-flex align-items-end">
+                    {% if form.instance.pk %}
+                      {{ form.DELETE }}
+                    {% endif %}
                     <button type="button" class="btn btn-sm btn-outline-danger remove-form">
                       <i class="bi bi-trash"></i>
                     </button>
@@ -77,7 +80,6 @@
             </button>
           </div>
         </form>
-
       </div>
     </div>
   </div>
@@ -89,7 +91,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- Select2 Styling -->
 <style>
 .select2-container--bootstrap-5 .select2-selection {
   min-height: 38px;
@@ -100,88 +101,104 @@
 }
 </style>
 
-<!-- Dynamic Ingredient Forms -->
 <script>
-  $(document).ready(function () {
-      function initializeSelect2(element) {
-          element.select2({
-              theme: 'bootstrap-5',
-              placeholder: "Search for an ingredient...",
-              width: '100%',
-              ajax: {
-                  url: "{% url 'recipes:ingredient_search' %}",
-                  dataType: 'json',
-                  delay: 250,
-                  data: function (params) {
-                      return {
-                          q: params.term
-                      };
-                  },
-                  processResults: function (data) {
-                      console.log('Data received:', data); //  Check console to debug
-                      return {
-                          results: data.results || [] //  Safely handle results
-                      };
-                  },
-                  cache: true
-              },
-              minimumInputLength: 1
-          });
-      }
+$(document).ready(function() {
+  // Store the empty form HTML for cloning
+  const emptyFormHtml = $('.ingredient-form').first().clone()[0].outerHTML;
   
-      // Initialize all existing ingredient selects
-      $('.select2-ingredient').each(function () {
-          initializeSelect2($(this));
-      });
+  // Initialize Select2 for all existing ingredient selects
+  function initializeSelect2() {
+    $('.select2-ingredient').select2({
+      theme: 'bootstrap-5',
+      placeholder: 'Search for an ingredient...',
+      width: '100%',
+      ajax: {
+        url: "{% url 'recipes:ingredient_search' %}",
+        dataType: 'json',
+        delay: 250,
+        data: function(params) {
+          return { q: params.term };
+        },
+        processResults: function(data) {
+          return { results: data.results || [] };
+        },
+        cache: true
+      },
+      minimumInputLength: 1
+    });
+  }
   
-      // Add new ingredient form dynamically
-      $('#add-ingredient').click(function () {
-          const formIdx = $('#id_recipeingredient_set-TOTAL_FORMS').val();
-          const newForm = $('.ingredient-form:first').clone(true);
-  
-          newForm.find(':input').each(function () {
-              const name = $(this).attr('name');
-              const id = $(this).attr('id');
-              if (name) {
-                  $(this).attr('name', name.replace(/-\d+-/, `-${formIdx}-`));
-              }
-              if (id) {
-                  $(this).attr('id', id.replace(/-\d+-/, `-${formIdx}-`));
-              }
-              if ($(this).is('select')) {
-                  $(this).empty();
-              } else {
-                  $(this).val('');
-              }
-          });
-  
-          newForm.appendTo('#ingredient-forms');
-          initializeSelect2(newForm.find('.select2-ingredient'));
-          $('#id_recipeingredient_set-TOTAL_FORMS').val(parseInt(formIdx) + 1);
-      });
-  
-      // Remove an ingredient form dynamically
-      $(document).on('click', '.remove-form', function () {
-          $(this).closest('.ingredient-form').remove();
-          const forms = $('.ingredient-form');
-          $('#id_recipeingredient_set-TOTAL_FORMS').val(forms.length);
-  
-          // Re-index
-          forms.each(function (index) {
-              $(this).find(':input').each(function () {
-                  const name = $(this).attr('name');
-                  const id = $(this).attr('id');
-                  if (name) {
-                      $(this).attr('name', name.replace(/-\d+-/, `-${index}-`));
-                  }
-                  if (id) {
-                      $(this).attr('id', id.replace(/-\d+-/, `-${index}-`));
-                  }
-              });
-          });
-      });
-  });
-  </script>
-  
+  // Initialize existing selects
+  initializeSelect2();
 
+  // Add new ingredient form
+  $('#add-ingredient').click(function() {
+    const formCount = parseInt($('#id_recipe_ingredients-TOTAL_FORMS').val());
+    const newFormHtml = emptyFormHtml.replace(/-\d+-/g, `-${formCount}-`);
+    const $newForm = $(newFormHtml);
+    
+    // Append the new form
+    $('#ingredient-forms').append($newForm);
+    
+    // Clear values in the new form
+    $newForm.find('input[type="text"]').val('');
+    $newForm.find('select').val(null).trigger('change');
+    
+    // Initialize Select2 for the new select element
+    $newForm.find('.select2-ingredient').select2({
+      theme: 'bootstrap-5',
+      placeholder: 'Search for an ingredient...',
+      width: '100%',
+      ajax: {
+        url: "{% url 'recipes:ingredient_search' %}",
+        dataType: 'json',
+        delay: 250,
+        data: function(params) {
+          return { q: params.term };
+        },
+        processResults: function(data) {
+          return { results: data.results || [] };
+        },
+        cache: true
+      },
+      minimumInputLength: 1
+    });
+    
+    // Update the total form count
+    $('#id_recipe_ingredients-TOTAL_FORMS').val(formCount + 1);
+  });
+
+  // Remove ingredient form
+  $(document).on('click', '.remove-form', function() {
+    const $form = $(this).closest('.ingredient-form');
+    const formCount = $('.ingredient-form').length;
+    
+    if (formCount > 1) {
+      // Destroy Select2 before removing
+      $form.find('.select2-ingredient').select2('destroy');
+      $form.remove();
+      
+      // Re-number all remaining forms
+      $('.ingredient-form').each(function(index) {
+        $(this).find(':input').each(function() {
+          const $input = $(this);
+          const name = $input.attr('name').replace(/-\d+-/, `-${index}-`);
+          const id = $input.attr('id').replace(/-\d+-/, `-${index}-`);
+          $input.attr({
+            'name': name,
+            'id': id
+          });
+        });
+      });
+      
+      // Update the total form count
+      $('#id_recipe_ingredients-TOTAL_FORMS').val(formCount - 1);
+    } else {
+      // If it's the last form, just clear it
+      $form.find('input[type="text"]').val('');
+      $form.find('select').val(null).trigger('change');
+    }
+  });
+});
+</script>
 {% endblock %}

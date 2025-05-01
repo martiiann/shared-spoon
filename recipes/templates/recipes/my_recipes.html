@@ -2,7 +2,11 @@
 
 {% block content %}
 <div class="container py-5">
-  <h2 class="mb-4 text-center">My Recipes 🍽️</h2>
+  <div class="card mb-4 shadow-sm rounded-4">
+    <div class="card-body text-center">
+      <h2 class="mb-0">My Recipes 🍽️</h2>
+    </div>
+  </div>
 
   {% if page_obj and page_obj.object_list %}
     <div class="recipe-grid">
@@ -26,27 +30,35 @@
             <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="img-fluid rounded mb-3" width="300">
           {% endif %}
 
-          <div class="mt-2">
-            <a href="{% url 'recipes:edit_recipe' recipe.id %}" class="btn btn-sm btn-outline-secondary ms-2">✏️ Edit</a>
+          <div class="mt-2 d-flex flex-wrap gap-2">
+            <a href="{% url 'recipes:edit_recipe' recipe.id %}" class="btn btn-sm btn-outline-secondary flex-fill text-center">✏️ Edit</a>
 
-            <form action="{% url 'recipes:delete_recipe' recipe.id %}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+            <form action="{% url 'recipes:delete_recipe' recipe.id %}" method="POST" class="flex-fill" onsubmit="return confirm('Are you sure you want to delete this recipe?');">
               {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-outline-danger ms-1">🗑️ Delete</button>
+              <button type="submit" class="btn btn-sm btn-outline-danger w-100 text-center">🗑️ Delete</button>
             </form>
 
             {% if user.is_authenticated %}
-              <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}" style="display: inline;">
+              <form method="POST" action="{% url 'recipes:toggle_favorite' recipe.id %}" class="flex-fill">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm {% if user in recipe.liked_by.all %}btn-danger{% else %}btn-outline-danger{% endif %} ms-1">
+                <button type="submit" class="btn btn-sm {% if user in recipe.liked_by.all %}btn-danger{% else %}btn-outline-danger{% endif %} w-100 text-center">
                   ❤️ {% if user in recipe.liked_by.all %} Unsave {% else %} Save {% endif %}
                 </button>
               </form>
             {% else %}
-              <small><a href="{% url 'login' %}" class="ms-2">Login to save ❤️</a></small>
+              <small class="ms-2"><a href="{% url 'login' %}">Login to save ❤️</a></small>
             {% endif %}
           </div>
         </div> <!-- close recipe-card -->
-      {% endfor %} 
+      {% endfor %}
+
+      <!-- Add New Recipe Card -->
+      <div class="recipe-card text-center d-flex flex-column justify-content-center align-items-center border border-2 border-dashed rounded p-4">
+        <a href="{% url 'recipes:add' %}" class="text-decoration-none text-dark d-flex flex-column align-items-center">
+          <i class="bi bi-plus-circle-fill" style="font-size: 3rem;"></i>
+          <p class="mt-2 mb-0 fw-bold">Add New Recipe</p>
+        </a>
+      </div>
 
       {% if page_obj.has_other_pages %}
       <nav aria-label="Page navigation" class="mt-4">
@@ -75,7 +87,6 @@
         </ul>
       </nav>
       {% endif %}
-
     </div> <!-- close recipe-grid -->
 
   {% else %}

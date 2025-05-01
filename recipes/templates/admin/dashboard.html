@@ -1,0 +1,30 @@
+{% extends 'recipes/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="card shadow p-4 mx-auto" style="max-width:800px;">
+    <div class="card-body">
+      <h1 class="card-title">App Admin Dashboard</h1>
+      <div class="d-flex gap-4 my-3">
+        <div><strong>Users:</strong> {{ user_count }}</div>
+        <div><strong>Recipes:</strong> {{ recipe_count }}</div>
+        <div><strong>Ingredients:</strong> {{ ingredient_count }}</div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'recipes:admin_recipe_list' %}"
+           class="btn btn-primary">
+          Manage Recipes
+        </a>
+        <a href="{% url 'recipes:admin_user_list' %}"
+           class="btn btn-secondary">
+          Manage Users
+        </a>
+        <a href="{% url 'recipes:admin_ingredient_list' %}"
+           class="btn btn-success">
+          Manage Ingredients
+        </a>
+      </div>      
+    </div>
+  </div>
+</div>
+{% endblock %}

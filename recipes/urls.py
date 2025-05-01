@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import admin_dashboard
 
 app_name = 'recipes'  
 
@@ -28,5 +29,13 @@ urlpatterns = [
     
     # AJAX endpoints
     path('api/ingredients/', views.manage_ingredients, name='ingredient_search'), 
- 
+
+    #Admin
+    path('app-admin/', admin_dashboard, name='app_admin_dashboard'),
+    path('app-admin/recipes/',        views.RecipeListView.as_view(),    name='admin_recipe_list'),
+    path('app-admin/recipes/create/', views.RecipeCreateView.as_view(),  name='admin_recipe_create'),
+    path('app-admin/recipes/<int:pk>/edit/',   views.RecipeUpdateView.as_view(), name='admin_recipe_edit'),
+    path('app-admin/recipes/<int:pk>/delete/', views.RecipeDeleteView.as_view(), name='admin_recipe_delete'),
+    path('app-admin/users/', views.UserListView.as_view(), name='admin_user_list'),
+    path('app-admin/ingredients/', views.IngredientListView.as_view(), name='admin_ingredient_list'),
 ]

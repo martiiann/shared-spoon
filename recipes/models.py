@@ -1,9 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
+
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -42,7 +43,7 @@ class Recipe(models.Model):
     ]
 
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='recipes'
     )
@@ -76,7 +77,7 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     liked_by = models.ManyToManyField(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='favorite_recipes',
         blank=True,
         verbose_name='Users who liked this recipe'
@@ -107,7 +108,6 @@ class Recipe(models.Model):
     def get_absolute_url(self):
         return reverse('recipe_detail', kwargs={'pk': self.pk, 'slug': self.slug})
 
-    
     @property
     def rating_count(self):
         """Count of all ratings with caching"""
@@ -167,14 +167,15 @@ class RecipeIngredient(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='profile'
     )
     avatar = models.ImageField(
-        upload_to='avatars/',
-        default='avatars/default-avatar.png'
-    )
+    upload_to='avatars/',
+    blank=True,
+    null=True
+)
     bio = models.TextField(
         max_length=500,
         blank=True,
@@ -188,7 +189,7 @@ class Profile(models.Model):
         verbose_name_plural = 'Profiles'
 
     def __str__(self):
-        return f'{self.user.username}\'s Profile'
+        return f"{self.user.username}'s Profile"
 
     def get_absolute_url(self):
         return reverse('profile')
@@ -196,7 +197,7 @@ class Profile(models.Model):
 
 class Rating(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='ratings_given'
     )

@@ -1,4 +1,5 @@
 {% extends 'recipes/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container my-5">
@@ -10,13 +11,21 @@
   <!-- Avatar Section -->
   <div class="d-flex flex-column align-items-center justify-content-center mb-4">
     {% if profile.avatar %}
-      <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle avatar-img">
-    {% else %}
-      <div class="rounded-circle d-flex align-items-center justify-content-center bg-secondary"
-           style="width: 120px; height: 120px; color: white; font-size: 50px;">
-        {{ user.username|first|upper }}
-      </div>
-    {% endif %}
+    <img
+      src="{{ profile.avatar.url }}"
+      alt="{{ user.username }}’s avatar"
+      class="rounded-circle avatar-img"
+      id="avatarPreview"
+    >
+  {% else %}
+    <img
+      src="{% static 'recipes/img/default_avatar.png' %}"
+      alt="Default avatar"
+      class="rounded-circle avatar-img"
+      id="avatarPreview"
+    >
+  {% endif %}
+  </div>
     
     <!-- Upload Button (centered) -->
     <form method="POST" enctype="multipart/form-data" action="{% url 'recipes:profile' %}" class="d-flex flex-column align-items-center mt-3 w-100">
@@ -66,7 +75,7 @@
 <script>
 // Live Avatar Preview
 document.addEventListener('DOMContentLoaded', function () {
-  const avatarInput = document.getElementById('id_avatar');
+  const avatarInput = document.getElementById('avatarUpload');
   const avatarPreview = document.getElementById('avatarPreview');
 
   avatarInput.addEventListener('change', function (event) {
