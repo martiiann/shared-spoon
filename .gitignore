@@ -11,6 +11,7 @@ venv/
 
 # Environment / secrets
 .env
+env.py
 
 # VSCode
 .vscode/
