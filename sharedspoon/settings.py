@@ -36,6 +36,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://shared-spoon-f2d629a69afc.herokuapp.com'
 ]
 
+# Security settings for HTTPS
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Application definition
 
