@@ -2,6 +2,7 @@ from django import forms
 from .models import Recipe, Profile, Ingredient, RecipeIngredient
 from django.forms import inlineformset_factory
 
+
 class RecipeIngredientForm(forms.ModelForm):
     ingredient = forms.ModelChoiceField(
         queryset=Ingredient.objects.all(),
@@ -11,7 +12,7 @@ class RecipeIngredientForm(forms.ModelForm):
         }),
         required=True
     )
-    
+
     class Meta:
         model = RecipeIngredient
         fields = ['ingredient', 'quantity', 'notes']
@@ -26,6 +27,7 @@ class RecipeIngredientForm(forms.ModelForm):
             }),
         }
 
+
 # Formset factory for ingredients
 RecipeIngredientFormSet = inlineformset_factory(
     Recipe,
@@ -37,6 +39,7 @@ RecipeIngredientFormSet = inlineformset_factory(
     validate_min=True,
     fields=['ingredient', 'quantity', 'notes']
 )
+
 
 class RecipeForm(forms.ModelForm):
     class Meta:
@@ -64,10 +67,11 @@ class RecipeForm(forms.ModelForm):
                 'class': 'form-control'
             }),
         }
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['image'].required = False
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:

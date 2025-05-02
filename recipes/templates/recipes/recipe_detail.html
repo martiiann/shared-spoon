@@ -128,11 +128,14 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+/* jshint esversion: 8 */
+/* global fetch */
+
+document.addEventListener('DOMContentLoaded', function () {
   const submitBtn = document.getElementById('submit-rating-btn');
   if (!submitBtn) return;
 
-  submitBtn.addEventListener('click', async function() {
+  submitBtn.addEventListener('click', async function () {
     const form = document.getElementById('rating-form');
     const ratingValue = form.querySelector('select[name="rating"]').value;
     const feedbackDiv = document.getElementById('rating-feedback');
@@ -148,21 +151,20 @@ document.addEventListener('DOMContentLoaded', function() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': '{{ csrf_token }}'  // Django will inject this
         },
         body: `rating=${ratingValue}`
       });
+
       const data = await response.json();
       if (!data.success) throw new Error(data.error || 'Failed to submit rating');
 
-      // Show thank-you with the actual selected value:
       feedbackDiv.innerHTML = `
         <div class="alert alert-success text-center">
           Thanks for your ${ratingValue}-star rating! ⭐
         </div>
       `;
 
-      // Hide the form card immediately:
       if (ratingSection) ratingSection.style.display = 'none';
     } catch (err) {
       feedbackDiv.innerHTML = `
