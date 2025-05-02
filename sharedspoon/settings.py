@@ -37,8 +37,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Security settings for HTTPS
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 
 # Application definition
 
