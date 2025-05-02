@@ -90,7 +90,7 @@
                   <li><a class="dropdown-item" href="{% url 'recipes:favorites' %}">❤️ Favorites</a></li>
                   <li><a class="dropdown-item" href="{% url 'recipes:add' %}">➕ Add Recipe</a></li>
             
-                  {% if user.is_admin %}
+                  {% if user.is_superuser %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
                       <a class="dropdown-item" href="{% url 'recipes:app_admin_dashboard' %}">
