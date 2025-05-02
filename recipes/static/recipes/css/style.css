@@ -6,6 +6,7 @@ body {
     color: #333;
     min-height: 100vh;
     transition: background-color 0.4s ease, color 0.4s ease, background 0.4s ease;
+    margin-bottom: 80px;
 }
 
 a {
@@ -629,3 +630,5 @@ body.dark-mode .p-5.mb-4.rounded-3 {
   .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
     height: 36px;
   }
+
+  
