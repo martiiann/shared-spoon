@@ -10,7 +10,7 @@ $(document).ready(function () {
         placeholder: 'Search for an ingredient...',
         width: '100%',
         ajax: {
-            url: document.getElementById('ingredient-search-url').dataset.url,
+            url: window.ingredientSearchUrl,
           dataType: 'json',
           delay: 250,
           data: function (params) {
@@ -41,7 +41,7 @@ $(document).ready(function () {
         placeholder: 'Search for an ingredient...',
         width: '100%',
         ajax: {
-          url: '/api/ingredients/',
+          url: window.ingredientSearchUrl,
           dataType: 'json',
           delay: 250,
           data: function (params) {
