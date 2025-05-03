@@ -173,14 +173,11 @@ def add_recipe(request):
 
 
 def manage_ingredients(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        q = request.GET.get('q', '')
-        ingredients = Ingredient.objects.filter(
-            name__icontains=q
-        ).order_by('name')
-        results = [{'id': ing.id, 'text': ing.name} for ing in ingredients]
-        return JsonResponse({'results': results})
-    return JsonResponse({'results': []})
+    q = request.GET.get('q', '')
+    ingredients = Ingredient.objects.filter(name__icontains=q).order_by('name')
+    results = [{'id': ing.id, 'text': ing.name} for ing in ingredients]
+    return JsonResponse({'results': results})
+
 
 
 @login_required
