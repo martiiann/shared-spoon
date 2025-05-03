@@ -162,3 +162,11 @@ import os
 # Redirects after login/logout
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Load DEBUG safely
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+
+# Only serve local media in DEBUG mode
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
