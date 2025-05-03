@@ -4,6 +4,7 @@ from django.db.models import Avg
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
+from cloudinary.models import CloudinaryField  
 
 
 class Ingredient(models.Model):
@@ -68,8 +69,9 @@ class Recipe(models.Model):
         choices=CATEGORY_CHOICES,
         help_text="Category of the recipe"
     )
-    image = models.ImageField(
-        upload_to='recipe_images/',
+    image = CloudinaryField(
+        'image', 
+        folder='recipe_images',
         blank=True,
         null=True,
         help_text='Upload a high-quality image of your recipe'
@@ -171,11 +173,12 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         related_name='profile'
     )
-    avatar = models.ImageField(
-    upload_to='avatars/',
-    blank=True,
-    null=True
-)
+    avatar = CloudinaryField(
+        'image',
+        folder='avatars',
+        blank=True,
+        null=True
+    )
     bio = models.TextField(
         max_length=500,
         blank=True,
