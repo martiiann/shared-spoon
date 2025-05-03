@@ -272,6 +272,13 @@ body.dark-mode {
     color: #e0e0e0;
 }
 
+body.dark-mode .dark-mode-card {
+  background-color: #1e1e1e;
+  color: #f8f9fa;
+  border: none;
+}
+
+
 body.dark-mode .navbar {
     background: linear-gradient(to right, #000000, #1a1a1a);
     border-bottom: 1px solid #222;
@@ -631,4 +638,4 @@ body.dark-mode .p-5.mb-4.rounded-3 {
     height: 36px;
   }
 
-  
+ 
