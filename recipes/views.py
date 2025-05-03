@@ -205,6 +205,7 @@ def edit_recipe(request, pk):
     return render(request, 'recipes/edit_recipe.html', {
         'form': form,
         'formset': formset,
+        'recipe': recipe,
     })
 
 
