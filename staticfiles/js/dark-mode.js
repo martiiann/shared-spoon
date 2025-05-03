@@ -33,3 +33,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+module.exports = { 
+    toggleDarkMode,
+    initializeDarkMode: function() {
+      document.addEventListener('DOMContentLoaded', function() {
+        // ... (copy your existing DOMContentLoaded code here)
+      });
+    }
+  };
