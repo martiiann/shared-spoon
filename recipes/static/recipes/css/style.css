@@ -1,7 +1,7 @@
 /* Base Styles */
 body {
     font-family: 'Quicksand', sans-serif;
-    background: url('/static/recipes/img/bg.png') no-repeat center center fixed;
+    background: url('/static/recipes/img/bg.jpg') no-repeat center center fixed;
     background-size: cover;
     color: #333;
     min-height: 100vh;
@@ -266,7 +266,7 @@ small.text-muted {
    ================================ */
 
 body.dark-mode {
-    background: rgba(20,20,20,0.8) url('/static/recipes/img/bg.png') no-repeat center center fixed;
+    background: rgba(20,20,20,0.8) url('/static/recipes/img/bg.jpg') no-repeat center center fixed;
     background-blend-mode: multiply;
     background-size: cover;
     color: #e0e0e0;
