@@ -1,14 +1,39 @@
-# Shared Spoon
+# Shared Spoon 🍴
 
-**Shared Spoon** is a full-stack recipe sharing platform built with Django. It allows users to create accounts, post recipes, save favorites, search by ingredients, and interact with a dynamic and visually appealing interface. The site features a responsive design with dark mode support, AJAX-powered ingredient search, and user avatars.
+![Shared Spoon Preview](README_IMAGES/desktopoverviewhome.png)
 
-Live Site: [https://shared-spoon-f2d629a69afc.herokuapp.com](https://shared-spoon-f2d629a69afc.herokuapp.com)  
-Repository: [https://github.com/martiiann/shared-spoon](https://github.com/martiiann/shared-spoon)
+**Shared Spoon** is a full-stack recipe web application where users can register, log in, add recipes, browse others’ creations, and mark their favorites. Built using Django and PostgreSQL, it features responsive design, dynamic ingredient search using Select2, user profiles with avatars, and dark mode toggle for a personalized experience.
+
+🔗 [Live Site](https://shared-spoon-f2d629a69afc.herokuapp.com)  
+💻 [GitHub Repository](https://github.com/martiiann/shared-spoon)
 
 ---
+
+## 📚 Table of Contents
+
+- [Responsive Overview](#-responsive-overview)
+- [Page Overviews](#-page-overviews)
+- [Wireframes](#-wireframes)
+- [Features](#-features)
+- [Functionality Overview](#-functionality-overview)
+- [Manual Testing Table](#-manual-testing-table)
+- [First-Time Visitor Goals](#-first-time-visitor-goals)
+- [Returning Visitor Goals](#returning-visitor-goals)
+- [Design](#design)
+- [Validator Testing](#-validator-testing)
+- [Performance](#-performance)
+- [Devices Tested](#-devices-tested)
+- [Future Features](#-future-features)
+- [Deployment](#-deployment)
+- [Debugging & Problem Solving](#-debugging--problem-solving)
+- [Lessons Learned](#-lessons-learned)
+- [Acknowledgments](#-acknowledgments)
+
+---
+
 ## 📱 Responsive Overview
 
-Below is how the site appears on different screen sizes:
+> **Note**: Mobile, tablet, and desktop views are tested manually and verified for responsiveness.
 
 | Mobile View | Tablet View | Desktop View |
 |-------------|-------------|--------------|
@@ -19,71 +44,91 @@ Below is how the site appears on different screen sizes:
 ## 🧭 Page Overviews
 
 ### 🏠 Home Page
-- Displays a welcome message and search bar.
-- Highlights latest recipes.
-- Accessible to guests and logged-in users.
-
-![Home](README_IMAGES/home.png)
-
----
+![Home](README_IMAGES/homepageoverview.png)
 
 ### 👤 My Profile
-- Users can upload avatars, edit profile details, and view a summary of activity.
-- Shows all their submitted recipes.
-
-![Profile](README_IMAGES/profile.png)
-
----
+![Profile](README_IMAGES/profileoverview.png)
 
 ### ➕ Add Recipe
-- Form to add a recipe with title, description, ingredients, quantities, and image.
-- Select2 search input for ingredients.
-- Dynamic formset to add/remove ingredients.
-- Fully styled for dark/light mode.
-
-![Add Recipe](README_IMAGES/add_recipe.png)
-
----
+![Add Recipe](README_IMAGES/addrecipeoverview.png)
 
 ### ❤️ My Favorites
-- Displays a grid of all favorited recipes.
-- Includes recipe previews and ability to unfavorite.
-
-![Favorites](README_IMAGES/favorites.png)
-
----
+![Favorites](README_IMAGES/favoriteoverview.png)
 
 ### 📓 My Recipes
-- Displays a user’s own posted recipes.
-- Includes edit/delete buttons if authenticated.
-
-![My Recipes](README_IMAGES/my_recipes.png)
+![My Recipes](README_IMAGES/myrecipeoverview.png)
 
 ---
 
-## Features
+## 🧩 Wireframes
 
-### Core Functionality
+> All wireframes reflect desktop layout. Responsiveness is confirmed through manual testing.
 
-- **User Authentication**: Register, log in, log out.
-- **Profile Management**: Upload avatars, edit bios.
-- **Recipe CRUD**: Create, read, update, delete recipes.
-- **AJAX Ingredient Search**: Dynamic Select2-powered search for ingredients.
-- **Favorites System**: Users can favorite/unfavorite recipes.
-- **Recipe Filtering**: Filter by ingredient or category.
-- **Responsive Layout**: Fully optimized for mobile, tablet, and desktop.
-- **Dark Mode**: Toggle dark/light mode for better accessibility.
+### Home Page
+![Wireframe - Home](README_IMAGES/homepagewireframe.png)
+
+### Add Recipe
+![Wireframe - Add Recipe](README_IMAGES/addrecipewireframe.png)
+
+### My Recipes
+![Wireframe - My Recipes](README_IMAGES/myrecipewireframe.png)
+
+### Profile
+![Wireframe - Profile](README_IMAGES/profilewireframe.png)
+
+### Recipe Detail
+![Wireframe - Recipe Detail](README_IMAGES/recipedetailwireframe.png)
 
 ---
 
-## First-Time Visitor Goals
+## ✨ Features
+
+- **User Authentication**: Register, login, and logout.
+- **CRUD Recipes**: Add, update, delete recipes.
+- **Favorites**: Users can save and manage favorites.
+- **Profile Page**: Avatar upload, view own activity.
+- **Searchable Ingredients**: AJAX-powered Select2 dropdown.
+- **Dark Mode**: Toggle available for all users.
+- **Responsive Design**: Mobile-first layout.
+- **Pagination**: For recipe listings.
+
+---
+
+## 🧮 Functionality Overview
+
+| Feature                        | Description                                                                |
+|-------------------------------|-----------------------------------------------------------------------------|
+| Add Recipe                    | Title, category, image, instructions, and ingredients using formsets        |
+| Ingredient Search             | AJAX-powered with Select2, results dynamically returned                     |
+| Save Favorite                 | One-click save/unsave to personal list                                      |
+| Dark Mode Toggle              | Retains preference via `localStorage`                                       |
+| Profile Page                  | User recipes, avatar, bio                                                   |
+| Admin Dashboard               | Available to superusers for moderation                                      |
+
+---
+
+## ✅ Manual Testing Table
+
+| Feature                       | Test Description                            | Expected Outcome          | Status     |
+|-------------------------------|---------------------------------------------|---------------------------|------------|
+| Register User                 | Fill and submit form                        | New user created          | Pass       |
+| Add Recipe                    | Submit form with ingredients                | Recipe saved              | Pass       |
+| Favorite Toggle               | Click heart icon                            | Recipe added/removed      | Pass       |
+| Ingredient Search             | Type “sugar” in ingredient field            | Relevant results appear   | Pass       |
+| Dark Mode                     | Toggle switch                               | Colors inverted           | Pass       |
+| Admin Login                   | Login as superuser                          | Dashboard access          | Pass       |
+| Update Profile                | Change avatar and bio                       | Profile updated           | Pass       |
+| Mobile Layout                 | Open site on phone                          | Layout responsive         | Pass       |
+
+---
+
+## 🎯 First-Time Visitor Goals
 
 - Understand what the platform does upon landing.
 - Explore recent and popular recipes.
 - View single recipe details without account.
 - Use search to quickly find relevant dishes.
 - Easily register an account to contribute recipes.
-- **Screenshot placeholder:** `screenshots/first-time-home.png`
 
 ---
 
@@ -93,19 +138,6 @@ Below is how the site appears on different screen sizes:
 - Add or manage personal recipes.
 - Update profile with avatar and bio.
 - Search by ingredients and categories.
-
----
-
-## Functionality Overview
-
-| Feature                        | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| Add Recipe                    | Title, category, image, instructions, and ingredients using formsets        |
-| Ingredient Search             | AJAX-powered with Select2, results dynamically returned                      |
-| Save Favorite                 | One-click save/unsave to personal list                                      |
-| Dark Mode Toggle              | Retains preference via `localStorage`                                       |
-| Profile Page                  | User recipes, avatar, bio                                                   |
-| Admin Dashboard               | Available to superusers for moderation                                      |
 
 ---
 
@@ -119,84 +151,108 @@ Below is how the site appears on different screen sizes:
 
 ---
 
-## Validator Testing
+## 🧪 Validator Testing
 
-### HTML
-- Validated with [W3C HTML Validator](https://validator.w3.org/)
-- **Screenshot placeholder**: `screenshots/html-validation.png`
+### ✅ HTML Validation
+Validated via W3C Validator
 
-### CSS
-- Validated with [W3C CSS Validator](https://jigsaw.w3.org/css-validator/)
-- **Screenshot placeholder**: `screenshots/css-validation.png`
+- ![Index HTML](README_IMAGES/indextest.png)
+- ![Profile HTML](README_IMAGES/profiletest.png)
+- ![My Recipes HTML](README_IMAGES/myrecipetest.png)
+- ![My Favorites HTML](README_IMAGES/myfavoritetest.png)
+- ![Add Recipe HTML](README_IMAGES/addrecipetest.png)
+- ![Admin Page HTML](README_IMAGES/adminpagetest.png)
 
-### JavaScript
-- Checked with [JSHint](https://jshint.com/)
-- No critical warnings or errors.
-- **Screenshot placeholder**: `screenshots/js-validation.png`
+### ✅ CSS Validation  
+- ![CSS Validator](README_IMAGES/csstest.png)
 
-### Python
-- Validated using [Code Institute Python Linter](https://pep8ci.herokuapp.com/)
-- **Screenshot placeholder**: `screenshots/python-validation.png`
+### ✅ JavaScript Validation (JSHint)
+- ![JS DOM Test](README_IMAGES/jsdmtest.png)
+- ![Add Recipe JS Test](README_IMAGES/addrecipejstest.png)
+- ![Edit Recipe JS Test](README_IMAGES/editrecipejstest.png)
+- ![Recipes JS Test](README_IMAGES/recipesjstest.png)
+- ![Recipe Detail JS Test](README_IMAGES/recipedetailjstest.png)
 
----
-
-## Manual Testing Table
-
-| Feature                        | Test Description                            | Expected Outcome          | Status     |
-|-------------------------------|---------------------------------------------|---------------------------|------------|
-| Register User                 | Fill and submit form                        | New user created          | Pass       |
-| Add Recipe                    | Submit form with ingredients                | Recipe saved              | Pass       |
-| Favorite Toggle               | Click heart icon                            | Recipe added/removed      | Pass       |
-| Ingredient Search             | Type “sugar” in ingredient field            | Relevant results appear   | Pass       |
-| Dark Mode                     | Toggle switch                               | Colors inverted           | Pass       |
-| Admin Login                   | Login as superuser                          | Dashboard access          | Pass       |
-| Update Profile                | Change avatar and bio                       | Profile updated           | Pass       |
-| Mobile Layout                 | Open site on phone                          | Layout responsive         | Pass       |
-
-### Manual Test Evidence
-
-- **Screenshot placeholder**: `screenshots/manual-add.png`
-- **Screenshot placeholder**: `screenshots/manual-search.png`
-- **Screenshot placeholder**: `screenshots/manual-favorite.png`
+### ✅ Python Validation (Code Institute Linter)
+- ![Forms.py](README_IMAGES/formspytest.png)
+- ![Models.py](README_IMAGES/modelspytest.png)
+- ![Views.py](README_IMAGES/viewstest.png)
+- ![Urls.py](README_IMAGES/urlstest.png)
 
 ---
 
-## Performance Testing
+## 🚀 Performance
 
-Tested with Google Lighthouse in Chrome.
+Tested via Google Lighthouse  
+![Performance](README_IMAGES/performancetest.png)
 
-| Category        | Score |
-|-----------------|-------|
-| Performance     | 96    |
-| Accessibility   | 88    |
-| Best Practices  | 93    |
-| SEO             | 91    |
-
-- **Screenshot placeholder**: `screenshots/lighthouse.png`
+- **Performance**: 96%
+- **Accessibility**: 88%
+- **Best Practices**: 93%
+- **SEO**: 91%
 
 ---
 
-## Future Features
+## 📱 Devices Tested
 
-- User comments on recipes
-- Recipe rating system
-- Upload multiple recipe images
-- Ingredient stock tracker (inventory style)
+The following devices were used to test responsiveness:
+
+- **Mobile**: iPhone 16, iPhone 15, Samsung Galaxy S23 Ultra  
+- **Tablet**: iPad Air, Xiaomi Redmi Tab Pro  
+- **Desktop**: MacBook Pro, Windows PC (1920x1080 resolution)
+
+### Results
+
+- **Mobile**: All elements were displayed correctly, and the layout was adjusted to fit the smaller screen. Navigation, buttons, and functionality were fully operational. **Works as expected.**
+- **Tablet**: The site scaled perfectly for medium-sized screens, maintaining visual hierarchy and ease of navigation. **Works as expected.**
+- **Desktop**: The full layout was displayed as intended, with no visual or functional issues. **Works as expected.**
+
+---
+
+## 💡 Future Features
+
+- Recipe commenting and discussions
+- User-to-user following system
+- Dietary filters (vegan, gluten-free)
 - Shareable recipe links with previews
 
 ---
 
-## Deployment
+## 🛠️ Deployment
 
-The site is hosted on Heroku: [Shared Spoon](https://shared-spoon-f2d629a69afc.herokuapp.com)
+Hosted on **Heroku**: [Live Site](https://shared-spoon-f2d629a69afc.herokuapp.com)  
+Code: [GitHub Repository](https://github.com/martiiann/shared-spoon)
+
+---
+
+## 🐞 Debugging & Problem Solving
+
+During development, I encountered and resolved several issues using Chrome DevTools, Django logs, and Heroku CLI. Key fixes included:
+
+- **AJAX Ingredient Search**: Corrected a CSRF token issue and adjusted `data-url` in the dynamic form.
+- **Static Files on Heroku**: Solved by setting up Whitenoise, ensuring `collectstatic` ran, and configuring `STATIC_ROOT`.
+- **Formset Save Errors**: Fixed by using `commit=False` and linking child form data to the parent `Recipe` object.
+- **404 on Recipe Detail**: Traced to a missing `pk` in the URL — resolved with the correct pattern and view query.
+
+Tools used included `console.log()`, Django’s debug messages, and `heroku logs --tail`.
+
+---
+
+## 🧠 Lessons Learned
+
+This project deepened my understanding of Django and full-stack development. I learned how to:
+
+- Build dynamic, user-friendly forms with formsets and Select2
+- Use AJAX to enhance user experience in real-time without page reloads
+- Implement responsive layouts using Bootstrap and dark mode customization
+- Store media and sensitive data securely in production using environment variables
+- Test, validate, and deploy a fully functional site on Heroku
+
+If given more time, I would further expand features such as recipe commenting and a user-following system. This project helped me build confidence in deploying secure, scalable, and user-centered web applications.
 
 ---
 
 ## Acknowledgments
-
-- [Code Institute](https://codeinstitute.net/)
-- Bootstrap, jQuery, Select2, Font Awesome
-- [Unsplash](https://unsplash.com/) and [Pexels](https://pexels.com) for sample images
-- Heroku for hosting
-
----
+- Special thanks to my mentors **Marko** and **Moritz** for their invaluable guidance throughout my project.
+- I would like to thank the tutor support team at **Code Institute** for their assistance.
+- A big thank you to the entire **Code Institute** for providing me with the opportunity to attend this course and work on this project.
