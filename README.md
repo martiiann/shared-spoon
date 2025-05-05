@@ -44,7 +44,7 @@
 ## 🧭 Page Overviews
 
 ### 🏠 Home Page
-![Home](README_IMAGES/homepageoverview.png)
+![Home](README_IMAGES/desktopoverviewhome.png)
 
 ### 👤 My Profile
 ![Profile](README_IMAGES/profileoverview.png)
@@ -56,7 +56,7 @@
 ![Favorites](README_IMAGES/favoriteoverview.png)
 
 ### 📓 My Recipes
-![My Recipes](README_IMAGES/myrecipeoverview.png)
+![My Recipes](README_IMAGES/myrecipesoverview.png)
 
 ---
 
@@ -184,7 +184,7 @@ Validated via W3C Validator
 ## 🚀 Performance
 
 Tested via Google Lighthouse  
-![Performance](README_IMAGES/performancetest.png)
+![Performance](README_IMAGES/perfomancetest.png)
 
 - **Performance**: 96%
 - **Accessibility**: 88%
