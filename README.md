@@ -128,16 +128,78 @@ The following Entity Relationship Diagram (ERD) outlines the structure of the da
 
 ## ✅ Manual Testing Table
 
-| Feature                       | Test Description                            | Expected Outcome          | Status     |
-|-------------------------------|---------------------------------------------|---------------------------|------------|
-| Register User                 | Fill and submit form                        | New user created          | Pass       |
-| Add Recipe                    | Submit form with ingredients                | Recipe saved              | Pass       |
-| Favorite Toggle               | Click heart icon                            | Recipe added/removed      | Pass       |
-| Ingredient Search             | Type “sugar” in ingredient field            | Relevant results appear   | Pass       |
-| Dark Mode                     | Toggle switch                               | Colors inverted           | Pass       |
-| Admin Login                   | Login as superuser                          | Dashboard access          | Pass       |
-| Update Profile                | Change avatar and bio                       | Profile updated           | Pass       |
-| Mobile Layout                 | Open site on phone                          | Layout responsive         | Pass       |
+| Feature                       | Test Description                                 | Expected Outcome                              | Status     |
+|-------------------------------|--------------------------------------------------|-----------------------------------------------|------------|
+| Register User                 | Fill and submit form                             | New user created, redirected, success message | Pass       |
+| Login                         | Submit valid credentials                         | Logged in, redirected to home                 | Pass       |
+| Invalid Login                 | Submit incorrect password                        | Error message shown, login fails              | Pass       |
+| Logout                        | Click logout button                              | User logged out, flash message shown          | Pass       |
+| Add Recipe                    | Submit form with ingredients                     | Recipe saved, flash message shown             | Pass       |
+| Edit Recipe                   | Change fields and save                           | Recipe updates, flash message shown           | Pass       |
+| Delete Recipe                 | Confirm deletion via modal                       | Recipe removed, flash message shown           | Pass       |
+| Delete Recipe Cancel          | Click delete, then cancel modal                  | Recipe not deleted                            | Pass       |
+| Favorite Toggle               | Click heart icon                                 | Recipe added/removed from favorites           | Pass       |
+| Favorite Persistency          | Favorite recipe, reload page                     | Heart icon remains filled                     | Pass       |
+| Ingredient Search             | Type “sugar” in ingredient field                 | Relevant results dynamically displayed        | Pass       |
+| Add Multiple Ingredients      | Add several items using formset                  | All show on recipe after submission           | Pass       |
+| Update Profile                | Upload avatar, edit bio/location, submit         | Changes saved, flash message shown            | Pass       |
+| Add Profile Image             | Upload a valid image file                        | Avatar preview updates                        | Pass       |
+| Invalid Avatar Upload         | Try uploading `.txt` as avatar                   | Error message shown                           | Pass       |
+| Mobile Layout                 | Open site on iPhone / Samsung                    | Fully responsive layout                       | Pass       |
+| Tablet Layout                 | Open site on iPad / Android tablet               | Scales and functions properly                 | Pass       |
+| Desktop Layout                | View site on 1920x1080 screen                    | Layout centered and stable                    | Pass       |
+| Dark Mode                     | Toggle switch                                    | Dark theme applied, remembered on reload      | Pass       |
+| Rating Updates                | Rate recipe and change value                     | Rating updates without page reload            | Pass       |
+| Unauthorized Edit Attempt     | Try editing another user’s recipe via URL        | Access denied or redirected                   | Pass       |
+| Admin Login                   | Log in as superuser                              | Access admin dashboard                        | Pass       |
+| Pagination                    | View recipe list and use pagination links        | Next/previous pages load correctly            | Pass       |
+
+---
+
+## 🔬 Additional Testing (CRUD, Edge Cases, Validation)
+
+### 🧪 CRUD Functionality Testing
+
+| Action  | Feature Tested     | Method                                                       | Expected Result                          | Status |
+|---------|--------------------|--------------------------------------------------------------|-------------------------------------------|--------|
+| Create  | Add Recipe         | Fill recipe form with valid input and submit                 | Recipe added, success message shown       | ✅     |
+| Read    | View Recipe Detail | Click on a recipe from home or profile                       | Recipe details shown correctly            | ✅     |
+| Update  | Edit Recipe        | Click "Edit" on own recipe, change fields, save              | Recipe updated, success message shown     | ✅     |
+| Delete  | Delete Recipe      | Click "Delete" and confirm in modal                          | Recipe deleted, success message shown     | ✅     |
+
+---
+
+### ❌ Negative Testing Examples
+
+| Scenario                              | Action Taken                                              | Expected Behavior                                      | Status |
+|---------------------------------------|-----------------------------------------------------------|--------------------------------------------------------|--------|
+| Empty Recipe Form                     | Submit form without filling required fields               | Error messages shown next to empty fields              | ✅     |
+| Invalid Avatar Upload                 | Try uploading a `.txt` file as avatar                     | Form displays validation error                         | ✅     |
+| Unauthorized Edit Attempt             | Manually change URL to edit another user's recipe         | 403 Forbidden error or redirect                        | ✅     |
+| Delete without Confirmation           | Try to delete recipe without submitting confirmation modal| Recipe not deleted                                     | ✅     |
+| Duplicate Rating                      | Rate same recipe again                                    | Old rating updated, not duplicated                     | ✅     |
+
+---
+
+### 🔔 User Feedback
+
+Flash messages (via Django’s `messages` framework) are shown after key user actions to inform users of success or failure. These include:
+
+- ✅ Registering, logging in, or logging out
+- ✅ Adding, editing, or deleting a recipe
+- ✅ Saving or removing a favorite
+- ✅ Updating profile details
+
+These messages are styled using Bootstrap alert components for visibility.
+
+---
+
+### 🛑 Data Protection
+
+- ✅ Users are shown a **confirmation modal** before deleting a recipe to prevent accidental loss.
+- ✅ Only the owner of the recipe can update or delete it.
+- ✅ Admins have the ability to view and manage all recipes and users through a dedicated admin dashboard.
+- ✅ CSRF protection is enabled site-wide via Django middleware.
 
 ---
 
